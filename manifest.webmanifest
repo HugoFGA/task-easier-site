@@ -1,0 +1,11 @@
+{
+  "name": "Task Easier",
+  "short_name": "Task Easier",
+  "start_url": "./app.html",
+  "display": "standalone",
+  "background_color": "#f8f9fa",
+  "theme_color": "#F4511E",
+  "icons": [
+    { "src": "icon128.png", "sizes": "128x128", "type": "image/png" }
+  ]
+}
