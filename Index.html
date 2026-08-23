@@ -1,0 +1,2301 @@
+<!DOCTYPE html>
+<!-- Arquivo: Index.html | Versão: 42 (atualizar este número a cada mudança neste arquivo) -->
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Task Easier</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --blue:#1a73e8;--blue-dk:#1557b0;--blue-lt:#e8f0fe;
+  --red:#d93025;--amber:#b06000;--green:#188038;
+  --text:#202124;--sec:#5f6368;--border:#dadce0;
+  --bg:#f8f9fa;--white:#fff;
+  --hdr-bg:#f1f3f4;--hdr-hover:#e8eaed;--row-border:#f1f3f4;
+  --row-a:#ffffff;--row-b:#f6f7f8;--row-hover:#eef2f6;
+  --danger-hover-bg:#fce8e6;--icon-muted:#bdc1c6;
+  --overlay:rgba(255,255,255,.9);--modal-overlay:rgba(0,0,0,.4);
+  --focus-ring:rgba(26,115,232,.15);--on-accent:#fff;
+  --shadow:0 1px 3px rgba(0,0,0,.12);
+  --shadow-lg:0 8px 24px rgba(0,0,0,.15);
+  --font:'Google Play','Google Sans',Roboto,-apple-system,sans-serif;
+  --headerrow-top:42px;
+}
+/* ── TEMA ESCURO ── */
+html[data-theme="dark"]{
+  --blue:#8ab4f8;--blue-dk:#669df6;--blue-lt:#28303b;
+  --red:#f28b82;--amber:#fdd663;--green:#81c995;
+  --text:#e8eaed;--sec:#9aa0a6;--border:#3c4043;
+  --bg:#202124;--white:#292a2d;
+  --hdr-bg:#303134;--hdr-hover:#3c4043;--row-border:#33363a;
+  --row-a:#292a2d;--row-b:#26272a;--row-hover:#33363a;
+  --danger-hover-bg:#3c2a29;--icon-muted:#5f6368;
+  --overlay:rgba(32,33,36,.92);--modal-overlay:rgba(0,0,0,.6);
+  --focus-ring:rgba(138,180,248,.25);--on-accent:#202124;
+  --shadow:0 1px 3px rgba(0,0,0,.5);
+  --shadow-lg:0 8px 24px rgba(0,0,0,.6);
+}
+/* height:100vh (em vez de 100%) porque, dentro do iframe do Apps Script,
+   uma altura em porcentagem não tem uma referência confiável — o resultado
+   é a página crescer sem limite e precisar rolar a janela inteira, em vez
+   de só a lista rolar por dentro, mantendo cabeçalho/filtros fixos. */
+html,body{height:100vh;font-family:var(--font);font-size:14px;color:var(--text);background:var(--bg);transition:background .15s,color .15s}
+body{display:flex;flex-direction:column;overflow:hidden}
+
+/* ── BUTTONS ── */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border:none;border-radius:4px;cursor:pointer;font-size:13px;font-weight:500;font-family:var(--font);transition:background .15s;white-space:nowrap}
+.btn:disabled{opacity:.55;cursor:not-allowed}
+.btn-primary{background:var(--blue);color:var(--on-accent)}.btn-primary:hover:not(:disabled){background:var(--blue-dk)}
+.btn-ghost{background:transparent;color:var(--sec);border:1px solid var(--border)}.btn-ghost:hover{background:var(--bg)}
+.btn-danger{background:none;border:none;cursor:pointer;color:var(--icon-muted);padding:4px 6px;border-radius:4px;display:flex;align-items:center;transition:color .15s,background .15s}
+.btn-danger:hover{color:var(--red);background:var(--danger-hover-bg)}
+.btn-icon{padding:6px;background:transparent;border:none;cursor:pointer;color:var(--sec);border-radius:4px}
+.coffee-btn{padding:6px;background:transparent;border:none;cursor:pointer;border-radius:4px;font-size:15px;line-height:1;opacity:.65;filter:grayscale(15%);transition:opacity .15s,filter .15s,background .15s}
+.coffee-btn:hover{opacity:1;filter:none;background:var(--bg)}
+.btn-icon:hover{background:var(--bg)}
+
+/* ── LOADING ── */
+#loading{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:var(--overlay);z-index:99;gap:14px}
+#loading p{color:var(--sec)}
+.spinner{width:36px;height:36px;border:3px solid var(--border);border-top-color:var(--blue);border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ── HEADER ── */
+.app-header{display:flex;align-items:center;justify-content:space-between;background:var(--white);border-bottom:1px solid var(--border);padding:0 24px;height:56px;flex-shrink:0;box-shadow:var(--shadow)}
+.header-left{display:flex;align-items:center;gap:10px}
+.header-left h1{font-size:16px;font-weight:600}
+.header-right{display:flex;align-items:center;gap:8px}
+.lang-switch{display:flex;align-items:center;gap:2px;margin-left:2px}
+.lang-btn{background:transparent;border:none;cursor:pointer;font-size:15px;line-height:1;padding:3px;border-radius:4px;opacity:.4;filter:grayscale(60%);color:var(--text);transition:opacity .15s,filter .15s,background .15s,color .15s}
+.lang-btn:hover{background:var(--bg)}
+.lang-btn.active{opacity:1;filter:none}
+
+/* ── TOOLBAR ── */
+.toolbar{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;padding:8px 24px;background:var(--white);border-bottom:1px solid var(--border);flex-shrink:0}
+.toolbar-left,.toolbar-right{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+select.ctrl,input.ctrl{padding:3px 10px;border:1px solid var(--border);border-radius:4px;font-size:12px;font-family:var(--font);color:var(--text);background:var(--white);outline:none;line-height:1.4}
+select.ctrl:focus,input.ctrl:focus{border-color:var(--blue)}
+.search-wrap{position:relative}
+.search-wrap svg{position:absolute;left:8px;top:50%;transform:translateY(-50%);color:var(--sec);pointer-events:none}
+#search{padding:6px 10px 6px 28px;width:200px}
+.count{font-size:13px;color:var(--text);font-weight:600;white-space:nowrap}
+
+.bulk-bar{display:none;align-items:center;gap:10px;flex-wrap:wrap;padding:2px 10px;background:var(--blue-lt);border-radius:6px}
+.bulk-bar.show{display:flex}
+.bulk-bar .bulk-count{font-size:12px;font-weight:600;color:var(--blue-dk)}
+.bulk-bar .bulk-fields{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.bulk-bar label{font-size:12px;color:var(--sec)}
+.bulk-bar .btn{padding:2px 10px;font-size:12px;line-height:1.4}
+
+/* ── TABLE ── */
+.table-wrap{padding:0 24px 20px;overflow:auto;flex:1;min-height:0}
+table{width:auto;border-collapse:separate;border-spacing:0;background:var(--white);border-radius:8px;box-shadow:var(--shadow);table-layout:fixed}
+thead th{background:var(--hdr-bg);padding:7px 14px;text-align:left;font-size:11px;font-weight:600;color:var(--sec);text-transform:uppercase;letter-spacing:.04em;border-bottom:1px solid var(--border);white-space:nowrap;user-select:none;vertical-align:top;position:sticky;top:var(--headerrow-top);z-index:6;will-change:transform;transform:translateZ(0);backface-visibility:hidden;overflow:hidden}
+.col-resize-handle{position:absolute;top:0;right:0;width:10px;height:100%;cursor:col-resize;z-index:9}
+.col-resize-handle::after{content:'';position:absolute;top:0;right:3px;width:2px;height:100%;background:var(--border)}
+.col-resize-handle:hover::after,.col-resize-handle.resizing::after{background:var(--blue);width:3px;right:2.5px}
+th.col-draggable{cursor:grab}
+th.col-dragging{opacity:.4}
+th.col-drop-before{box-shadow:inset 3px 0 0 var(--blue)}
+th.col-drop-after{box-shadow:inset -3px 0 0 var(--blue)}
+.col-sel-hdr span,.col-chk-hdr span{display:block;line-height:15px}
+th.sort{cursor:pointer}th.sort:hover{background:var(--hdr-hover)}
+th.asc .sa::after{content:' ▲';font-size:10px}
+th.desc .sa::after{content:' ▼';font-size:10px}
+tbody tr{transition:background .1s}
+tbody td{border-bottom:1px solid var(--row-border)}
+tbody tr:last-child td{border-bottom:none}
+tbody tr.zebra-a td{background:var(--row-a)}
+tbody tr.zebra-b td{background:var(--row-b)}
+tbody tr:hover td{background:var(--row-hover)}
+tbody tr.done{opacity:.5}
+tbody tr.done .col-title{text-decoration:line-through;color:var(--sec)}
+td{padding:2px 12px;vertical-align:middle;font-size:13px;line-height:1.2}
+.col-num{width:26px;text-align:center;color:var(--sec);font-size:12px;padding-left:2px;padding-right:2px}
+.col-sel{width:28px;text-align:center;padding-left:3px;padding-right:3px}
+.col-sel input{width:15px;height:15px;cursor:pointer;accent-color:var(--blue)}
+.col-sel-hdr{display:flex;flex-direction:column;align-items:center;gap:4px}
+.col-chk{width:32px;text-align:center;padding-left:3px;padding-right:3px}
+.col-chk input{width:15px;height:15px;cursor:pointer;accent-color:var(--green)}
+.col-chk input:disabled,.col-sel input:disabled{opacity:.3;cursor:not-allowed}
+tr.tr-new td{background:var(--blue-lt)!important;position:sticky;top:0;z-index:7;will-change:transform;transform:translateZ(0);backface-visibility:hidden;border-bottom:3px solid var(--white)}
+tr.tr-new td:first-child{box-shadow:inset 3px 0 0 var(--blue)}
+tr.tr-new input[type=text],tr.tr-new input[type=date],tr.tr-new .list-sel{width:100%;border:1px solid var(--border);background:var(--white);font-size:12px!important;font-family:var(--font)!important;font-weight:400!important;padding:3px 4px;border-radius:4px;outline:none}
+tr.tr-new input[type=text]:focus,tr.tr-new input[type=date]:focus,tr.tr-new .list-sel:focus{border-color:var(--blue);background:var(--white);box-shadow:0 0 0 2px var(--focus-ring)}
+tr.tr-new .list-sel{width:auto;border:1px solid var(--border)}
+/* Título é o único campo que o usuário realmente digita -- cor plena. */
+tr.tr-new .col-title input[type=text]{color:var(--text)!important}
+tr.tr-new .col-title input[type=text]::placeholder{font-family:var(--font);font-size:12px;font-weight:400;color:var(--text);opacity:.55}
+/* Tipo, Dia e Notas já vêm preenchidos com um valor sugerido (não foi o
+   usuário quem digitou) -- ficam em tom acinzentado como sugestão, e só
+   viram pretos quando a caixa é selecionada para editar a informação. */
+tr.tr-new input[type=date],
+tr.tr-new .col-notes input[type=text],
+tr.tr-new .list-sel{color:var(--sec)!important}
+tr.tr-new input[type=date]:focus,
+tr.tr-new .col-notes input[type=text]:focus,
+tr.tr-new .list-sel:focus{color:var(--text)!important}
+tr.tr-new input[type=date]::-webkit-datetime-edit,
+tr.tr-new input[type=date]::-webkit-datetime-edit-fields-wrapper,
+tr.tr-new input[type=date]::-webkit-datetime-edit-text,
+tr.tr-new input[type=date]::-webkit-datetime-edit-month-field,
+tr.tr-new input[type=date]::-webkit-datetime-edit-day-field,
+tr.tr-new input[type=date]::-webkit-datetime-edit-year-field{font-family:var(--font)!important;font-size:12px!important;font-weight:400!important;color:var(--sec)!important}
+tr.tr-new input[type=date]:focus::-webkit-datetime-edit,
+tr.tr-new input[type=date]:focus::-webkit-datetime-edit-fields-wrapper,
+tr.tr-new input[type=date]:focus::-webkit-datetime-edit-text,
+tr.tr-new input[type=date]:focus::-webkit-datetime-edit-month-field,
+tr.tr-new input[type=date]:focus::-webkit-datetime-edit-day-field,
+tr.tr-new input[type=date]:focus::-webkit-datetime-edit-year-field{color:var(--text)!important}
+tr.tr-new .add-btn{background:transparent;border:none;color:var(--blue);cursor:pointer;font-size:18px;font-weight:700;padding:0 8px;border-radius:4px}
+tr.tr-new .add-btn:hover{background:var(--white)}
+.col-title{width:260px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+tbody .col-title,tbody .col-due,tbody .col-notes{font-size:12px;color:var(--text)}
+.col-list{width:140px}
+.color-sel{max-width:52px!important;flex-shrink:0;text-align:center;text-align-last:center;border:none!important;background:transparent;outline:none;box-shadow:none;cursor:pointer;border-radius:4px}
+.color-sel:hover,.color-sel:focus{background:var(--bg);border:none!important;box-shadow:none;outline:none}
+.color-bar{position:absolute;left:0;top:0;bottom:0;width:4px;cursor:pointer}
+.color-block{width:18px;height:18px;border-radius:4px;cursor:pointer;border:1px solid var(--border)}
+.color-dot{width:12px;height:12px;border-radius:50%;cursor:pointer;border:1px solid var(--border);flex-shrink:0}
+.color-popover{position:fixed;z-index:200;background:var(--white);border:1px solid var(--border);border-radius:8px;box-shadow:var(--shadow-lg);padding:8px;display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.color-popover .swatch{width:26px;height:26px;border-radius:50%;cursor:pointer;border:2px solid transparent;display:flex;align-items:center;justify-content:center}
+.color-popover .swatch:hover{border-color:var(--border)}
+.color-popover .swatch.selected{border-color:var(--text)}
+.color-popover .swatch svg{width:14px;height:14px;color:#fff;filter:drop-shadow(0 0 1px rgba(0,0,0,.6))}
+.notes-popover{position:fixed;z-index:200;background:var(--white);border:1px solid var(--border);border-radius:8px;box-shadow:var(--shadow-lg);padding:10px 12px;max-width:420px;white-space:pre-wrap;word-break:break-word;font-size:13px;color:var(--text);line-height:1.4;pointer-events:none}
+.col-due{width:230px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.col-notes{width:320px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.col-act{width:44px;text-align:center}
+td.editable{cursor:pointer;border-radius:4px}
+td.editable:hover{background:var(--blue-lt)}
+.edit-input{width:100%;padding:3px 6px;border:1.5px solid var(--blue);border-radius:4px;font-size:13px;font-family:var(--font);outline:none;background:var(--white);color:var(--text);box-shadow:0 0 0 3px var(--focus-ring)}
+.edit-input-title{padding:0 3px;font-size:12px;line-height:1.2;height:20px;border:1px solid var(--blue);border-radius:3px;box-shadow:none}
+.dt-edit-input{padding:0 3px;border:1px solid var(--blue);border-radius:3px;font-size:12px;line-height:1.2;font-family:var(--font);outline:none;background:var(--white);color:var(--text);box-shadow:none;height:20px}
+.list-sel{border:none;background:transparent;font-size:12px;color:var(--text);cursor:pointer;max-width:130px;outline:none;font-family:var(--font)}
+.list-sel:hover,.list-sel:focus{background:var(--white);border:1px solid var(--border);border-radius:4px}
+.overdue{color:var(--red);font-weight:500}
+.today{color:var(--amber);font-weight:500}
+#empty{text-align:center;padding:60px 20px;color:var(--sec)}
+#empty svg{display:block;margin:0 auto 12px}
+
+/* ── MODAL ── */
+.modal{position:fixed;inset:0;z-index:100;display:flex;align-items:center;justify-content:center}
+.modal-bg{position:absolute;inset:0;background:var(--modal-overlay)}
+.modal-box{position:relative;z-index:1;background:var(--white);border-radius:12px;padding:28px;width:460px;max-width:95vw;box-shadow:var(--shadow-lg)}
+.modal-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+.modal-hdr h2{font-size:17px;font-weight:600}
+.fg{margin-bottom:14px}
+.fg label{display:block;font-size:11px;font-weight:600;color:var(--sec);text-transform:uppercase;letter-spacing:.04em;margin-bottom:5px}
+.fg input,.fg select,.fg textarea{width:100%;padding:8px 10px;border:1.5px solid var(--border);border-radius:4px;font-size:13px;font-family:var(--font);outline:none;transition:border-color .15s;background:var(--white);color:var(--text)}
+.fg input:focus,.fg select:focus,.fg textarea:focus{border-color:var(--blue)}
+.fg textarea{resize:vertical}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.modal-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:20px;padding-top:16px;border-top:1px solid var(--border)}
+.req{color:var(--red)}
+
+/* ── TOAST ── */
+.toast{position:fixed;bottom:24px;right:24px;padding:10px 18px;border-radius:8px;font-size:13px;font-weight:500;z-index:200;box-shadow:var(--shadow-lg);max-width:340px;transition:opacity .3s}
+.toast-ok{background:var(--green);color:var(--on-accent)}
+.toast-err{background:var(--red);color:var(--on-accent)}
+
+/* ── DESFAZER EXCLUSÃO (snackbar estilo Gmail/Google, canto inferior direito) ── */
+.undo-toast{position:fixed;bottom:24px;right:24px;background:#323232;color:#fff;padding:10px 12px 10px 16px;border-radius:8px;font-size:13px;font-weight:500;z-index:210;box-shadow:var(--shadow-lg);display:flex;align-items:center;gap:18px;max-width:360px}
+.undo-toast button{background:transparent;border:none;color:#8ab4f8;font-weight:700;font-size:13px;cursor:pointer;padding:4px 8px;border-radius:4px;flex-shrink:0}
+.undo-toast button:hover{background:rgba(255,255,255,.1)}
+
+.hidden{display:none!important}
+</style>
+</head>
+<body>
+
+<!-- LOADING -->
+<div id="loading">
+  <div class="spinner"></div>
+  <p id="loading-msg" data-i18n="loading_tasks_initial">Carregando tarefas...</p>
+</div>
+
+<!-- HEADER -->
+<header class="app-header hidden" id="header">
+  <div class="header-left">
+    <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAAKrUlEQVR4nMWae4xdxX3HP7/fnHMfu3dfQCAx2BZpgNa0eRBISmm7QVVaKa3BmCxpRNIGCAmQRg1NgCBIHAubEkEoUUSEQqDuI6FhG7wGqSJtke2kEriUtq7omqik9XpNjHnY613v3seZmV//OPd61+t9YztfabW6956Z+X5nfvN7nBlhkbB16LZt6KXb8a3vamvPPEdILjHs1w3eHYwVAt0G7c1HqiI2Ishe4MUEnouOfyn17xk80m8fjlWYrCcuho8sinwfTvoJAGOrzz4jKYSPivHRaFxYSqQiCNEMbxDMiJa3U0BFSBScCGBM+Fhzov+O2Obo/Q/atvx8+IiQfqKAHTcBtg7V9TmfA2vfvrJdCl8w5JPFRE4lQjVEQiSSDyoIItP6NjAMaz3jFC07ARVqPo45k7+revlG15O7f9oacyGrMa+A1qw/3oe7LK74kiC3FRLpqWdGZtFjIgg6nfC8/bYEiUUnkpRTpeFtHOyB/Ro3rujfW93aSzLVVBctwHpJZDv+0GXLziul6SOFRC6pZYa36EHcYknPKQYLiiRtBUfmw86JzD7d/eTwv7U4LFpAq+H4muWXJ042FVS7x7LoRThuxGcSYmahkrrEx1hrmN1YeWJ401widC7yo2uW31BMdcBMuseyGFRIThR5AAFRkWQ8iyEzSu2J+8vRNcvvkO146yWZpc0s5C9f/tmOontoIosxGojMLPZEIRrmhNBW0GSsHu7sHBjeONNKHEXK+nCyHX/o8uWr2wv6UDWLIRhysskDqCAR3Hgj+o6i23BozVnXynb81mkrcWQFWm5rZPVZ7yoV9AVMKlm0kz7z0xHBEoiJSpyI4ZLuzXuff7wPd1UzHrXICYPI1l4Sl+j3iqqdjWh2UsmLgrr8/xQoiDdEhTRFv2efOKO9D7Dm5CuA9aHST7ioZ8XNlYJ+YCyLXgV30sirQn0CGzsI9Yn889SfBZ3w5tsKes7Y4eJd0k+gL+cutg5lPTbxh8vfIQ15SaDd27GR9ESSt/Ex3LnvQ1ecSxx6ifA/O5G2CthkNmFgDqIqsaG8t6N/zy76UN22DRUwq8ut5VQ7MiOeNPJJgh06QGHtjZT/4mmKX3yQ8v1Pk66+FpsYy02qCQEJYEWnKQ3WtXIlARj9g3NPS9LayyJ0+ty4TrwAl2CH3iT5zdWUvvo3+WwHD0kK9SoTn70YO/h6/nlyJUwAFXw92q90Dwz/LLejtPaxckG7vBFODnmHjY/iznkvxS99Oydo1iQboVhGTnkH+AbIUXQkQiilmjrTT0HLCxkfI+ap1QknrwqNOtLRQ/GOR5G2jpy8KsQAosS9LxOHdkGxDHFaQmpoCAbEK+397091ZM3yXxK4sBaiyIn2PCJghgVP6csPo8veCSHk5C0P91Y9TP2+m7DaxFF7YEoXWgtmTuW8iTNfvUBF7LfbUi37uLhKaElQh40eoHjjPbj39eY27xxg+UyLUr//84T/3pGvzPTZb8KMWE5Ug9PfUUUubtrNgiqgJcOl2MHXSK/8HOnvX9Mk38wKQgDnaGzagN/690jP2/Lf50DT3i9WTN4dbdIjzQuRfMllEdvFJdjomyS/8RGKn9mY23rLPJpC/DOP03jsPqT7beCzeTigPq//zleE5T5aXgjOB3WQNXIf7bMZbXTGNtUxdMV5FG95KBfe+gsBXEIY/Ffq3/wC0taZe6F5ICBZznmZitET5qcBotj4IeS0Zbj3/BbSdSo2PjppBrO0wTeg3EHpzk1IR09OUDS3b+ew11+h/ufXAZbvB1uYJRugSDERoRznC16a++30wx+n8JkNSKUbO/ga9W99Ef/jAeSUM2ZY9rw7q1cp3/4ouvKXJ+2+RbJepXb3tcQ39iGVrnntfmYR80EEGjX07Ssp/sl9SKUbQkB6Tqd0+yMkH/44dmD/sSvhHDb6JsXr78J98HenbFpr7gGl/s2bCS8+i3R0L5p8C2pYLX9TM4sXEsEadfSsd0GhdMRjECOkBUq3fYf0I5/CRt6YFJGk2MjrpJddT7r2phk8TkLjsW+Q/dP3F7ZpZ4EAGo2RZK7ta4YUS8Tdg02bd0dmEMv9d/HPvkV65eewg69BWsRGD+AuuJTiTV/PhU73OD/ZQmPTBqTr1CXPvAARy1SQvYkKzZdOMwogLRLffJX6vTdih0dyQjFMepMYKN5wN4Vrvoq9OoQueyelLz88OevNZ3AJ8eWd1O///DHp8mJgYKkKmOxLgBdV5MI5e4sBaevAP/sP2C2rKd31A+S0ZZPmRO5VClffAmkB96sXIz2nT/r75irYgf3UNl4DWQNKbfnvS1NgiSB12KUKzzZVzR0HYkC6TiXsHqR6+1ri3pdz8sFPBjeLFK76U9yqDzQTtClu0WfU7rmeuG83lNuXTr4pQfK86jkNKj+e8LGeLKT+9RlS6Sa+8jNqt19B/L/B3ExadizNjNLiZKRueZwHbyX8xzak85Ql230LRxI6eEY7nxj6aYzsLCdiGPNPS/BIeyc28jrV2y4j7Hr+aBFTC/Pmps1++CDZU999Sx6nBYNYdCJZsP/dP6LPK2Ci9KMiJgtM6IKHYhvUJqh95SrCC88cLWIKeb/jR9QfWYd0nZbvmbeOmDhBhYGztw/V8oos2PerWZxwgps1HhzTTcjjQtagtv6ThB0/mhThs9zj7N5F/d4bkEKp2egtJ7ymoPUshhh5FECtD9f+5PDPQ7THyqkKLMCMpopIC6BK7e5rCc//cy4iSbFXh6jd82mojufPLCBJm5c9hLZUNYv2dOeTewatD5ewKq+Faip317J4dQKpz4vnheXLMYJLIXhqG/4Yd8GHkHIHYedPsENvQLlyvEwHBWkEi+r4Wus7gclDjLErztpQKSR3jNWjV5n5bfCsaJWL1cMQI1Juz4v0WaqqxSIavqOoyVgtPNq5Zfi6FudcAAh9KG0r04nR+EIp0VUTmYUl1cittMHikiPtdJjlnseb7Su7+Gus2jvytfWwHmK+icFYhclfDdUs6tVZtEYi+YvVRY8WQzMWHCfyYKpEVaQe+CPp33uAQWQ9eQ1/JHjJeqL14Spbhv7TR7u+lKpzEBbslU4A8hNDfFtBk3Fvt/Rs2fOM9ZK0TkphWj0g/QTrJalsHv7rsUa4s62gif6CRDTH9O0FTcdr8YGuzXvum/eAA6B1nNM5MLxxrB6/0hSBLSRKHy/y+ftZqxQ1Gc/iA5WBPTdbH47tx3KY95Dv8NoV1xWEbzuRwriPXuT4nU7OhGjmS04TEah7u7UysOfeuQ6/Z03gWsc5lSf2PFKNodeb7eooukRAoh1/s7Jmnx1Fl4AN1X38vRb5pruccbw5M9BLm+bUtfmV50az8Q82fLw/ERodBXUKYpg3W/obvfw2gnmASkFdqkKW2cNvjDcuqgwM/+PWaRt2JizIFKaeSR2+4sz3JOJuM7iylGohBqMarLVHZrxmcITwlOsGIriSE5wTaplFxZ4KUb7eNjCU1ydT7mW8ZQHNwYXmURRAbc2yc03TT4CtMeP8cqIKRhYhi8fWpwIkKqQCIkItGIi9pMhT4P+2+MNX/qtF/Lhf9jhKyDqUQaQlxHpJstNXXhQDH2petznfjGUG5Wkt6yKyT2GXwI7odNv+12zH2duHaq1++weRqxYw61Px/3B7TZRfxX/RAAAAAElFTkSuQmCC" alt="" width="28" height="28">
+    <h1>Task Easier</h1>
+    <span class="lang-switch">
+      <button type="button" class="lang-btn" data-lang="pt" title="Português" aria-label="Português">🇧🇷</button>
+      <button type="button" class="lang-btn" data-lang="en" title="English" aria-label="English">🇺🇸</button>
+    </span>
+  </div>
+  <div class="header-right">
+    <button class="btn-icon" id="refresh-btn" title="Atualizar" data-i18n-title="title_refresh">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M23 4v6h-6M1 20v-6h6"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg>
+    </button>
+    <button class="btn-icon" id="theme-toggle-btn" title="Mudar para tema escuro">
+      <svg id="theme-toggle-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>
+    </button>
+    <button class="btn-icon" id="reset-cols-btn" title="Restaurar colunas ao padrão (ordem e tamanho)" data-i18n-title="title_reset_cols">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 019-9 9 9 0 019 9 9 9 0 01-9 9"/><polyline points="3 8 3 12 7 12"/></svg>
+    </button>
+    <button class="coffee-btn" id="coffee-btn" title="Apoie o projeto" data-i18n-title="title_support">☕</button>
+  </div>
+</header>
+
+<!-- TOOLBAR -->
+<div class="toolbar hidden" id="toolbar">
+  <div class="toolbar-left">
+    <select class="ctrl" id="filter-list"><option value="" data-i18n="opt_all_lists">Todas as listas</option></select>
+    <select class="ctrl" id="filter-status">
+      <option value="" data-i18n="opt_all_status">Todos os status</option>
+      <option value="needsAction" data-i18n="opt_pending">Pendentes</option>
+      <option value="completed" data-i18n="opt_completed">Concluídas</option>
+    </select>
+    <select class="ctrl" id="filter-mode">
+      <option value="0" data-i18n="opt_load_pending">Carregar só pendentes</option>
+      <option value="1" data-i18n="opt_load_all">Carregar todas</option>
+    </select>
+    <label style="display:flex;align-items:center;gap:4px;font-size:12px;color:var(--sec)">
+      <input type="checkbox" id="filter-show-tasks" checked> <span data-i18n="label_tasks">Tarefas</span>
+    </label>
+    <label style="display:flex;align-items:center;gap:4px;font-size:12px;color:var(--sec)">
+      <input type="checkbox" id="filter-show-events" checked> <span data-i18n="label_events">Eventos</span>
+    </label>
+    <!-- BULK BAR: fica na mesma linha da barra de ferramentas para não empurrar a tabela para baixo quando aparece -->
+    <div class="bulk-bar" id="bulk-bar">
+      <span class="bulk-count" id="bulk-count">0 selecionadas</span>
+      <button class="btn btn-primary" id="bulk-reschedule-btn" data-i18n="btn_bulk_reschedule">Reagendar</button>
+      <button class="btn btn-ghost" id="bulk-clear" data-i18n="btn_clear_selection">Limpar seleção</button>
+    </div>
+  </div>
+  <div class="toolbar-right">
+    <div class="search-wrap">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input class="ctrl" id="search" type="search" placeholder="Buscar..." data-i18n-placeholder="ph_search">
+    </div>
+    <span class="count" id="count"></span>
+  </div>
+</div>
+
+<!-- TABLE -->
+<div class="table-wrap hidden" id="main">
+  <table>
+    <thead>
+      <tr>
+        <th class="col-chk" data-col="col-chk">
+          <div class="col-sel-hdr">
+            <span>✅</span>
+          </div>
+        </th>
+        <th class="col-num" data-col="col-num">#</th>
+        <th class="col-sel" data-col="col-sel">
+          <div class="col-sel-hdr">
+            <span>📝</span>
+          </div>
+        </th>
+        <th class="col-title sort" data-col="col-title" data-f="title"><span data-i18n="col_title">Título</span> <span class="sa"></span></th>
+        <th class="col-list sort" data-col="col-list" data-f="list"><span data-i18n="col_type">Tipo</span> <span class="sa"></span></th>
+        <th class="col-due sort" data-col="col-due" data-f="due"><span data-i18n="col_day">Dia</span> <span class="sa"></span></th>
+        <th class="col-notes" data-col="col-notes"><span data-i18n="col_notes">Notas</span></th>
+        <th class="col-act" data-col="col-act"></th>
+      </tr>
+    </thead>
+    <tbody id="tbody"></tbody>
+  </table>
+  <div id="empty" class="hidden">
+    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#bdc1c6" stroke-width="1.5"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+    <p data-i18n="empty_msg">Nenhuma tarefa encontrada.</p>
+  </div>
+</div>
+
+<!-- MODAL REAGENDAR EM LOTE -->
+<div class="modal hidden" id="bulk-modal">
+  <div class="modal-bg" id="bulk-modal-bg"></div>
+  <div class="modal-box">
+    <div class="modal-hdr">
+      <h2 data-i18n="modal_bulk_title">Reagendar tarefas</h2>
+      <button class="btn-icon" id="bm-close">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <p style="font-size:13px;color:var(--sec);margin-bottom:16px" id="bulk-modal-count">0 tarefas selecionadas</p>
+    <div class="fg">
+      <label data-i18n="label_new_date">Nova data</label>
+      <input type="date" id="bm-date">
+    </div>
+    <div class="fg">
+      <label data-i18n="label_start_time">Horário de início</label>
+      <input type="time" id="bm-time" value="09:00">
+    </div>
+    <div class="fg">
+      <label data-i18n="label_apply_as">Aplicar como</label>
+      <div style="display:flex;flex-direction:column;gap:8px;margin-top:4px">
+        <label style="display:flex;align-items:center;gap:8px;font-weight:400;text-transform:none;font-size:13px;color:var(--text)">
+          <input type="radio" name="bm-mode" value="task" id="bm-mode-task" checked>
+          <span data-i18n="radio_task_label">Tarefa — horário salvo nas Notas (não ocupa a agenda)</span>
+        </label>
+        <label style="display:flex;align-items:center;gap:8px;font-weight:400;text-transform:none;font-size:13px;color:var(--text)">
+          <input type="radio" name="bm-mode" value="event" id="bm-mode-event">
+          <span data-i18n="radio_event_label">Evento no Calendar — bloco real de horário, marcado como Livre</span>
+        </label>
+      </div>
+    </div>
+    <div class="fg">
+      <label data-i18n="label_event_color">Cor do evento</label>
+      <select id="bm-color"></select>
+    </div>
+    <p style="font-size:12px;color:var(--sec);margin-top:-6px;margin-bottom:14px" data-i18n-html="bulk_help_html">
+      A primeira tarefa (na ordem exibida na tabela) recebe esse horário; cada tarefa seguinte é agendada 15 minutos depois.
+      No modo <strong>Tarefa</strong>, o Google Tasks não guarda horário na data — por isso ele é salvo no início das Notas (ex.: <code>[09:15]</code>).
+      No modo <strong>Evento</strong>, é criado um bloco de 15 min no seu Calendar marcado como Livre, para não aparecer como ocupado para outras pessoas. A cor selecionada só se aplica ao modo Evento.
+    </p>
+    <div class="modal-actions">
+      <button type="button" class="btn btn-ghost" id="bm-cancel" data-i18n="btn_cancel">Cancelar</button>
+      <button type="button" class="btn btn-primary" id="bm-apply" data-i18n="btn_apply">Aplicar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL CONVERTER TAREFA -> EVENTO -->
+<div class="modal hidden" id="convert-modal">
+  <div class="modal-bg" id="convert-modal-bg"></div>
+  <div class="modal-box" style="width:360px">
+    <div class="modal-hdr">
+      <h2 data-i18n="modal_convert_title">Converter em evento</h2>
+      <button class="btn-icon" id="cv-close">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <p id="cv-count" class="hidden" style="font-size:12px;color:var(--sec);margin-top:-8px;margin-bottom:14px"></p>
+    <div class="fg">
+      <label data-i18n="label_date">Data</label>
+      <input type="date" id="cv-date">
+    </div>
+    <div class="fg">
+      <label data-i18n="label_time">Horário</label>
+      <input type="time" id="cv-time" value="09:00">
+    </div>
+    <div class="fg">
+      <label data-i18n="label_event_color">Cor do evento</label>
+      <select id="cv-color"></select>
+    </div>
+    <div class="fg">
+      <label data-i18n="label_recurs">Se repete</label>
+      <select id="cv-recur"></select>
+    </div>
+    <p style="font-size:12px;color:var(--sec);margin-top:-6px;margin-bottom:14px" data-i18n-html="convert_help_html">
+      Cria um evento de 15 min marcado como Livre e remove a tarefa original. Quando mais de uma tarefa está selecionada, a primeira começa no horário informado e as demais são encadeadas automaticamente 15 min depois uma da outra. A recorrência escolhida se aplica a todos os eventos criados.
+    </p>
+    <div class="modal-actions">
+      <button type="button" class="btn btn-ghost" id="cv-cancel" data-i18n="btn_cancel">Cancelar</button>
+      <button type="button" class="btn btn-primary" id="cv-apply" data-i18n="btn_convert">Converter</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div id="toast" class="toast hidden"></div>
+<div id="undo-toast" class="undo-toast hidden">
+  <span id="undo-toast-msg"></span>
+  <button type="button" id="undo-toast-btn" data-i18n="btn_undo">Desfazer</button>
+</div>
+
+<script>
+// ── STATE ──────────────────────────────────────────────────
+let allTasks  = [];
+let taskLists = [];
+let sortField = 'list';
+let sortDir   = 'asc';
+let fList     = '';
+let fStatus   = '';
+let fSearch   = '';
+let selectedKeys = new Set();
+let showTasks  = true;
+let showEvents = true;
+let convertingTask  = null;
+let convertingGroup = null;
+let lastSelectedIdx = null;
+
+// ── I18N (PT-BR / EN) ────────────────────────────────────────
+const I18N = {
+  pt: {
+    loading_default: 'Carregando...',
+    loading_tasks_events: 'Carregando tarefas e eventos...',
+    loading_tasks_initial: 'Carregando tarefas...',
+    opt_all_lists: 'Todas as listas',
+    opt_all_status: 'Todos os status',
+    opt_pending: 'Pendentes',
+    opt_completed: 'Concluídas',
+    opt_load_pending: 'Carregar só pendentes',
+    opt_load_all: 'Carregar todas',
+    label_tasks: 'Tarefas',
+    label_events: 'Eventos',
+    bulk_hint_html: 'Clique em qualquer <strong>Dia</strong> para agendar as tarefas selecionadas.',
+    btn_bulk_reschedule: 'Reagendar',
+    btn_clear_selection: 'Limpar seleção',
+    ph_search: 'Buscar...',
+    col_title: 'Título',
+    col_type: 'Tipo',
+    col_day: 'Dia',
+    col_notes: 'Notas',
+    empty_msg: 'Nenhuma tarefa encontrada.',
+    label_title: 'Título',
+    label_list: 'Lista',
+    label_day: 'Dia',
+    label_notes: 'Notas',
+    ph_optional: 'Opcional...',
+    btn_cancel: 'Cancelar',
+    btn_creating: 'Criando...',
+    modal_bulk_title: 'Reagendar tarefas',
+    label_new_date: 'Nova data',
+    label_start_time: 'Horário de início',
+    label_apply_as: 'Aplicar como',
+    radio_task_label: 'Tarefa — horário salvo nas Notas (não ocupa a agenda)',
+    radio_event_label: 'Evento no Calendar — bloco real de horário, marcado como Livre',
+    label_event_color: 'Cor do evento',
+    bulk_help_html: 'A primeira tarefa (na ordem exibida na tabela) recebe esse horário; cada tarefa seguinte é agendada 15 minutos depois. No modo <strong>Tarefa</strong>, o Google Tasks não guarda horário na data — por isso ele é salvo no início das Notas (ex.: <code>[09:15]</code>). No modo <strong>Evento</strong>, é criado um bloco de 15 min no seu Calendar marcado como Livre, para não aparecer como ocupado para outras pessoas. A cor selecionada só se aplica ao modo Evento.',
+    btn_apply: 'Aplicar',
+    btn_applying: 'Aplicando...',
+    modal_convert_title: 'Converter em evento',
+    label_date: 'Data',
+    label_time: 'Horário',
+    label_recurs: 'Se repete',
+    convert_help_html: 'Cria um evento de 15 min marcado como Livre e remove a tarefa original. Quando mais de uma tarefa está selecionada, a primeira começa no horário informado e as demais são encadeadas automaticamente 15 min depois uma da outra. A recorrência escolhida se aplica a todos os eventos criados.',
+    btn_convert: 'Converter',
+    btn_converting: 'Convertendo...',
+    type_task: 'Tarefa',
+    type_event: 'Evento',
+    quickadd_placeholder: '+ Nova tarefa ou evento...',
+    notes_placeholder: 'Notas (opcional)',
+    add_btn_title: 'Adicionar',
+    color_orange: 'Laranja', color_blue: 'Azul', color_green: 'Verde', color_red: 'Vermelho',
+    color_yellow: 'Amarelo', color_purple: 'Roxo', color_gray: 'Cinza', color_cyan: 'Ciano',
+    recur_none: 'Não se repete',
+    recur_daily: 'Todos os dias',
+    recur_weekly: 'Semanal: cada {day}',
+    recur_monthly: 'Mensal no(a) {ord}(a) {day}',
+    recur_yearly: 'Anual em {month} {date}',
+    recur_weekdays: 'Todos os dias da semana (segunda a sexta-feira)',
+    recur_other: 'Recorrente (personalizado)',
+    weekdays: ['domingo','segunda-feira','terça-feira','quarta-feira','quinta-feira','sexta-feira','sábado'],
+    months: ['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'],
+    ordinals: ['primeiro','segundo','terceiro','quarto','quinto'],
+    toast_event_created: 'Evento criado!',
+    toast_task_created: 'Tarefa criada!',
+    toast_no_list_found: 'Nenhuma lista de tarefas encontrada',
+    error_prefix: 'Erro: ',
+    toast_saved: 'Salvo!',
+    toast_color_applied_n: 'Cor aplicada a {n} evento(s)!',
+    toast_color_updated: 'Cor atualizada!',
+    toast_time_chained_n: 'Horário encadeado em {n} evento(s)!',
+    toast_date_chained_n: 'Data aplicada a {n} tarefa(s)!',
+    toast_event_updated: 'Evento atualizado!',
+    toast_date_saved: 'Data salva!',
+    delete_title: 'Excluir',
+    color_tooltip_change: 'Alterar cor ({name})',
+    color_tooltip_event: 'Cor do evento ({name})',
+    untitled: '(sem título)',
+    btn_undo: 'Desfazer',
+    toast_1_deleted: '1 item excluído.',
+    toast_n_deleted: '{n} itens excluídos.',
+    toast_undo_done: 'Restaurado!',
+    count_selected_one: '{n} selecionada',
+    count_selected_many: '{n} selecionadas',
+    count_selected_tasks_one: '{n} tarefa selecionada',
+    count_selected_tasks_many: '{n} tarefas selecionadas',
+    item_one: 'item',
+    item_many: 'itens',
+    toast_informe_data_horario: 'Informe data e horário.',
+    cv_count_html: '{n} tarefas selecionadas — a primeira inicia no horário informado, as demais são encadeadas 15 min depois, em sequência.',
+    toast_converted_to_event: 'Convertido em evento!',
+    toast_n_converted_to_events: '{n} tarefas convertidas em eventos!',
+    toast_converted_to_task: 'Convertido em tarefa!',
+    toast_n_converted_to_tasks: '{n} eventos convertidos em tarefas!',
+    toast_completed_event: '✅ Concluído!',
+    toast_reopened_event: '↩ Reaberto',
+    toast_completed_task: '✅ Concluída!',
+    toast_reopened_task: '↩ Reaberta',
+    toast_task_moved: 'Tarefa movida!',
+    toast_choose_date: 'Escolha uma data.',
+    toast_inform_start_time: 'Informe o horário de início.',
+    toast_select_task: 'Selecione ao menos uma tarefa.',
+    toast_no_task_selected: 'Nenhuma tarefa selecionada (eventos usam o encadeamento na própria linha).',
+    label_events_created_calendar: 'evento(s) criado(s) no Calendar',
+    label_tasks_rescheduled: 'tarefa(s) reagendada(s)',
+    errors_suffix: ', {fail} erro(s)',
+    title_refresh: 'Atualizar',
+    title_reset_cols: 'Restaurar colunas ao padrão (ordem e tamanho)',
+    title_support: 'Apoie o projeto',
+    theme_to_dark: 'Mudar para tema escuro',
+    theme_to_light: 'Mudar para tema claro'
+  },
+  en: {
+    loading_default: 'Loading...',
+    loading_tasks_events: 'Loading tasks and events...',
+    loading_tasks_initial: 'Loading tasks...',
+    opt_all_lists: 'All lists',
+    opt_all_status: 'All statuses',
+    opt_pending: 'Pending',
+    opt_completed: 'Completed',
+    opt_load_pending: 'Load pending only',
+    opt_load_all: 'Load all',
+    label_tasks: 'Tasks',
+    label_events: 'Events',
+    bulk_hint_html: 'Click any <strong>Day</strong> to schedule the selected tasks.',
+    btn_bulk_reschedule: 'Reschedule',
+    btn_clear_selection: 'Clear selection',
+    ph_search: 'Search...',
+    col_title: 'Title',
+    col_type: 'Type',
+    col_day: 'Day',
+    col_notes: 'Notes',
+    empty_msg: 'No tasks found.',
+    label_title: 'Title',
+    label_list: 'List',
+    label_day: 'Day',
+    label_notes: 'Notes',
+    ph_optional: 'Optional...',
+    btn_cancel: 'Cancel',
+    btn_creating: 'Creating...',
+    modal_bulk_title: 'Reschedule tasks',
+    label_new_date: 'New date',
+    label_start_time: 'Start time',
+    label_apply_as: 'Apply as',
+    radio_task_label: 'Task — time saved in Notes (does not occupy the calendar)',
+    radio_event_label: 'Calendar event — real time block, marked as Free',
+    label_event_color: 'Event color',
+    bulk_help_html: 'The first task (in the order shown in the table) gets this time; each following task is scheduled 15 minutes later. In <strong>Task</strong> mode, Google Tasks doesn\'t store a time on the date — so it\'s saved at the start of the Notes (e.g.: <code>[09:15]</code>). In <strong>Event</strong> mode, a 15 min block is created on your Calendar marked as Free, so it doesn\'t show as busy to other people. The selected color only applies to Event mode.',
+    btn_apply: 'Apply',
+    btn_applying: 'Applying...',
+    modal_convert_title: 'Convert to event',
+    label_date: 'Date',
+    label_time: 'Time',
+    label_recurs: 'Repeats',
+    convert_help_html: 'Creates a 15 min event marked as Free and removes the original task. When more than one task is selected, the first one starts at the given time and the rest are automatically chained 15 min after each other. The chosen recurrence applies to all created events.',
+    btn_convert: 'Convert',
+    btn_converting: 'Converting...',
+    type_task: 'Task',
+    type_event: 'Event',
+    quickadd_placeholder: '+ New task or event...',
+    notes_placeholder: 'Notes (optional)',
+    add_btn_title: 'Add',
+    color_orange: 'Orange', color_blue: 'Blue', color_green: 'Green', color_red: 'Red',
+    color_yellow: 'Yellow', color_purple: 'Purple', color_gray: 'Gray', color_cyan: 'Cyan',
+    recur_none: 'Does not repeat',
+    recur_daily: 'Every day',
+    recur_weekly: 'Weekly: every {day}',
+    recur_monthly: 'Monthly on the {ord} {day}',
+    recur_yearly: 'Annually on {month} {date}',
+    recur_weekdays: 'Every weekday (Monday to Friday)',
+    recur_other: 'Recurring (custom)',
+    weekdays: ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'],
+    months: ['January','February','March','April','May','June','July','August','September','October','November','December'],
+    ordinals: ['first','second','third','fourth','fifth'],
+    toast_event_created: 'Event created!',
+    toast_task_created: 'Task created!',
+    toast_no_list_found: 'No task list found',
+    error_prefix: 'Error: ',
+    toast_saved: 'Saved!',
+    toast_color_applied_n: 'Color applied to {n} event(s)!',
+    toast_color_updated: 'Color updated!',
+    toast_time_chained_n: 'Time chained across {n} event(s)!',
+    toast_date_chained_n: 'Date applied to {n} task(s)!',
+    toast_event_updated: 'Event updated!',
+    toast_date_saved: 'Date saved!',
+    delete_title: 'Delete',
+    color_tooltip_change: 'Change color ({name})',
+    color_tooltip_event: 'Event color ({name})',
+    untitled: '(untitled)',
+    btn_undo: 'Undo',
+    toast_1_deleted: '1 item deleted.',
+    toast_n_deleted: '{n} items deleted.',
+    toast_undo_done: 'Restored!',
+    count_selected_one: '{n} selected',
+    count_selected_many: '{n} selected',
+    count_selected_tasks_one: '{n} task selected',
+    count_selected_tasks_many: '{n} tasks selected',
+    item_one: 'item',
+    item_many: 'items',
+    toast_informe_data_horario: 'Enter date and time.',
+    cv_count_html: '{n} tasks selected — the first starts at the given time, the rest are chained 15 min apart, in sequence.',
+    toast_converted_to_event: 'Converted to event!',
+    toast_n_converted_to_events: '{n} tasks converted to events!',
+    toast_converted_to_task: 'Converted to task!',
+    toast_n_converted_to_tasks: '{n} events converted to tasks!',
+    toast_completed_event: '✅ Completed!',
+    toast_reopened_event: '↩ Reopened',
+    toast_completed_task: '✅ Completed!',
+    toast_reopened_task: '↩ Reopened',
+    toast_task_moved: 'Task moved!',
+    toast_choose_date: 'Choose a date.',
+    toast_inform_start_time: 'Enter the start time.',
+    toast_select_task: 'Select at least one task.',
+    toast_no_task_selected: 'No task selected (events use the inline chaining).',
+    label_events_created_calendar: 'event(s) created in Calendar',
+    label_tasks_rescheduled: 'task(s) rescheduled',
+    errors_suffix: ', {fail} error(s)',
+    title_refresh: 'Refresh',
+    title_reset_cols: 'Reset columns to default (order and size)',
+    title_support: 'Support the project',
+    theme_to_dark: 'Switch to dark theme',
+    theme_to_light: 'Switch to light theme'
+  }
+};
+
+let currentLang = 'pt';
+try { currentLang = localStorage.getItem('gtm-lang') || 'pt'; } catch (e) { /* ignore */ }
+
+function T(key) {
+  var dict = I18N[currentLang] || I18N.pt;
+  return (dict[key] !== undefined) ? dict[key] : (I18N.pt[key] !== undefined ? I18N.pt[key] : key);
+}
+
+function tf(key, params) {
+  var str = T(key);
+  if (params) {
+    Object.keys(params).forEach(function(k) {
+      str = str.split('{' + k + '}').join(params[k]);
+    });
+  }
+  return str;
+}
+
+var COLOR_NAME_KEYS = { '6': 'color_orange', '9': 'color_blue', '10': 'color_green', '11': 'color_red', '5': 'color_yellow', '3': 'color_purple', '8': 'color_gray', '7': 'color_cyan' };
+function colorName(id) {
+  var key = COLOR_NAME_KEYS[id];
+  return key ? T(key) : '';
+}
+
+function tCountItems(n) { return n + ' ' + (n === 1 ? T('item_one') : T('item_many')); }
+function tCountSelected(n) { return tf(n === 1 ? 'count_selected_one' : 'count_selected_many', { n: n }); }
+function tCountSelectedTasks(n) { return tf(n === 1 ? 'count_selected_tasks_one' : 'count_selected_tasks_many', { n: n }); }
+
+function applyI18n() {
+  document.querySelectorAll('[data-i18n]').forEach(function(el) {
+    el.textContent = T(el.dataset.i18n);
+  });
+  document.querySelectorAll('[data-i18n-html]').forEach(function(el) {
+    el.innerHTML = T(el.dataset.i18nHtml);
+  });
+  document.querySelectorAll('[data-i18n-placeholder]').forEach(function(el) {
+    el.placeholder = T(el.dataset.i18nPlaceholder);
+  });
+  document.querySelectorAll('[data-i18n-title]').forEach(function(el) {
+    el.title = T(el.dataset.i18nTitle);
+  });
+  document.querySelectorAll('.lang-btn').forEach(function(b) {
+    b.classList.toggle('active', b.dataset.lang === currentLang);
+  });
+}
+
+function setLang(lang) {
+  if (lang !== 'pt' && lang !== 'en') return;
+  currentLang = lang;
+  try { localStorage.setItem('gtm-lang', lang); } catch (e) { /* ignore */ }
+  applyI18n();
+  if (typeof taskLists !== 'undefined' && taskLists && taskLists.length && typeof buildListSelects === 'function') buildListSelects(taskLists);
+  if (typeof applyTheme === 'function') applyTheme(document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'light');
+  if (typeof render === 'function' && document.getElementById('tbody')) render();
+}
+
+function initLangSwitch() {
+  document.querySelectorAll('.lang-btn').forEach(function(b) {
+    b.addEventListener('click', function() { setLang(b.dataset.lang); });
+  });
+  applyI18n();
+}
+
+
+// ── TEMA CLARO/ESCURO ────────────────────────────────────────
+var MOON_ICON = '<path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/>';
+var SUN_ICON  = '<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/>';
+
+function applyTheme(theme) {
+  document.documentElement.setAttribute('data-theme', theme);
+  var icon = document.getElementById('theme-toggle-icon');
+  var btn  = document.getElementById('theme-toggle-btn');
+  if (icon) icon.innerHTML = theme === 'dark' ? SUN_ICON : MOON_ICON;
+  if (btn)  btn.title = theme === 'dark' ? T('theme_to_light') : T('theme_to_dark');
+}
+
+function initTheme() {
+  var saved = null;
+  try { saved = localStorage.getItem('gtm-theme'); } catch (e) { /* ignore */ }
+  applyTheme(saved === 'dark' ? 'dark' : 'light');
+}
+
+function toggleTheme() {
+  var current = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'light';
+  var next = current === 'dark' ? 'light' : 'dark';
+  applyTheme(next);
+  try { localStorage.setItem('gtm-theme', next); } catch (e) { /* ignore */ }
+}
+
+initTheme();
+
+// ── CORES DE EVENTO (ids do Google Calendar) ────────────────
+// icon = exibido nas caixas de seleção (só o ícone, sem o nome da cor)
+// name = usado apenas no atributo title (tooltip ao passar o mouse)
+const EVENT_COLORS = [
+  { id: '6',  icon: '🟧', name: 'Laranja',  hex: '#F4511E' },
+  { id: '9',  icon: '🟦', name: 'Azul',     hex: '#3F51B5' },
+  { id: '10', icon: '🟩', name: 'Verde',    hex: '#0B8043' },
+  { id: '11', icon: '🟥', name: 'Vermelho', hex: '#D50000' },
+  { id: '5',  icon: '🟨', name: 'Amarelo',  hex: '#F6BF26' },
+  { id: '3',  icon: '🟪', name: 'Roxo',     hex: '#8E24AA' },
+  { id: '8',  icon: '⬜', name: 'Cinza',    hex: '#616161' },
+  { id: '7',  icon: '🔷', name: 'Ciano',    hex: '#039BE5' }
+];
+const DEFAULT_EVENT_COLOR = '6';
+
+function buildColorOptions(selectEl, currentValue) {
+  selectEl.innerHTML = '';
+  EVENT_COLORS.forEach(function(c) {
+    var o = document.createElement('option');
+    o.value = c.id; o.textContent = c.icon; o.title = colorName(c.id);
+    o.selected = c.id === (currentValue || DEFAULT_EVENT_COLOR);
+    selectEl.appendChild(o);
+  });
+  selectEl.title = colorName(currentValue || DEFAULT_EVENT_COLOR);
+}
+
+// ── PALETA DE CORES (popover ao clicar na barrinha/bloco de cor) ──
+// Substitui o antigo <select> nativo escondido (showPicker() só existe
+// em navegadores recentes e falhava silenciosamente em outros).
+var colorPopoverEl = null;
+function closeColorPopover() {
+  if (colorPopoverEl) { colorPopoverEl.remove(); colorPopoverEl = null; }
+  document.removeEventListener('mousedown', onColorPopoverOutside, true);
+  document.removeEventListener('keydown', onColorPopoverEscape, true);
+}
+function onColorPopoverOutside(e) {
+  if (colorPopoverEl && !colorPopoverEl.contains(e.target)) closeColorPopover();
+}
+function onColorPopoverEscape(e) {
+  if (e.key === 'Escape') closeColorPopover();
+}
+function openColorPopover(anchorEl, currentId, onSelect) {
+  closeColorPopover();
+  var pop = document.createElement('div');
+  pop.className = 'color-popover';
+  EVENT_COLORS.forEach(function(c) {
+    var sw = document.createElement('div');
+    sw.className = 'swatch' + (c.id === (currentId || DEFAULT_EVENT_COLOR) ? ' selected' : '');
+    sw.style.background = c.hex;
+    sw.title = colorName(c.id);
+    if (c.id === (currentId || DEFAULT_EVENT_COLOR)) {
+      sw.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>';
+    }
+    sw.addEventListener('click', function(e) {
+      e.stopPropagation();
+      closeColorPopover();
+      onSelect(c.id);
+    });
+    pop.appendChild(sw);
+  });
+  document.body.appendChild(pop);
+  var rect = anchorEl.getBoundingClientRect();
+  var popRect = pop.getBoundingClientRect();
+  var left = Math.min(rect.left, window.innerWidth - popRect.width - 8);
+  var top = rect.bottom + 4;
+  if (top + popRect.height > window.innerHeight) top = Math.max(4, rect.top - popRect.height - 4);
+  pop.style.left = Math.max(4, left) + 'px';
+  pop.style.top = top + 'px';
+  colorPopoverEl = pop;
+  setTimeout(function() {
+    document.addEventListener('mousedown', onColorPopoverOutside, true);
+    document.addEventListener('keydown', onColorPopoverEscape, true);
+  }, 0);
+}
+
+// ── POPUP DE NOTAS (aparece ao passar o mouse por cima, célula não editável) ──
+// A coluna Notas mostra só uma linha cortada (reticências); para ler tudo
+// sem precisar deixar a coluna larga, basta deixar o mouse parado em cima
+// que aparece este popup com o texto completo.
+var notesPopoverEl = null;
+var notesPopoverTimer = null;
+function hideNotesPopover() {
+  clearTimeout(notesPopoverTimer);
+  if (notesPopoverEl) { notesPopoverEl.remove(); notesPopoverEl = null; }
+}
+function scheduleNotesPopover(anchorEl, text) {
+  clearTimeout(notesPopoverTimer);
+  if (!text) return;
+  notesPopoverTimer = setTimeout(function() {
+    hideNotesPopover();
+    var pop = document.createElement('div');
+    pop.className = 'notes-popover';
+    pop.textContent = text;
+    document.body.appendChild(pop);
+    var rect = anchorEl.getBoundingClientRect();
+    var popRect = pop.getBoundingClientRect();
+    var left = Math.min(rect.left, window.innerWidth - popRect.width - 8);
+    var top = rect.bottom + 4;
+    if (top + popRect.height > window.innerHeight) top = Math.max(4, rect.top - popRect.height - 4);
+    pop.style.left = Math.max(4, left) + 'px';
+    pop.style.top = top + 'px';
+    notesPopoverEl = pop;
+  }, 350);
+}
+
+// ── NOMES DE LISTA EXIBIDOS (apenas na interface, não altera o Google Tasks) ──
+function displayTitle(title) {
+  return (title || '').toLowerCase() === 'tarefas diárias' ? T('type_task') : title;
+}
+
+// Qual lista real do Google Tasks recebe as tarefas criadas/exibidas como
+// "Tarefa" (a interface toda trata todas as listas de tarefas do usuário
+// como uma coisa só — "Tarefa" — e Calendar como "Evento", igual ao Google
+// Agenda ao criar um item rápido). Sempre usa a primeira lista do usuário.
+function resolveMainListId() {
+  return taskLists.length ? taskLists[0].id : null;
+}
+
+// ── OPÇÕES DE RECORRÊNCIA ("Se repete") ─────────────────────
+// Mesmas opções do seletor nativo do Google Calendar, calculadas a
+// partir da data escolhida no popup de conversão em grupo.
+function buildRecurOptions(selectEl, dateISO, keepValue, includeOther) {
+  var prevValue = keepValue ? selectEl.value : 'none';
+  selectEl.innerHTML = '';
+  var opts = [{ value: 'none', label: T('recur_none') }];
+  if (dateISO) {
+    var dp = dateISO.split('-').map(Number);
+    var d = new Date(dp[0], dp[1] - 1, dp[2]);
+    var wd = d.getDay();
+    var wdName = T('weekdays')[wd];
+    var ord = T('ordinals')[Math.min(Math.ceil(d.getDate() / 7) - 1, 4)];
+    var monthName = T('months')[d.getMonth()];
+    opts.push({ value: 'daily',   label: T('recur_daily') });
+    opts.push({ value: 'weekly',  label: tf('recur_weekly', { day: wdName }) });
+    opts.push({ value: 'monthly', label: tf('recur_monthly', { ord: ord, day: wdName }) });
+    opts.push({ value: 'yearly',  label: tf('recur_yearly', { month: monthName, date: d.getDate() }) });
+    if (wd >= 1 && wd <= 5) {
+      opts.push({ value: 'weekdays', label: T('recur_weekdays') });
+    }
+  }
+  if (includeOther) {
+    opts.push({ value: 'other', label: T('recur_other') });
+  }
+  opts.forEach(function(o) {
+    var el = document.createElement('option');
+    el.value = o.value; el.textContent = o.label;
+    selectEl.appendChild(el);
+  });
+  var stillValid = opts.some(function(o) { return o.value === prevValue; });
+  selectEl.value = stillValid ? prevValue : 'none';
+}
+
+// ── PRÓXIMO HORÁRIO LIVRE (encadeia após o último evento do dia) ──
+// Duração padrão de um evento: 15 minutos. Se não houver nenhum evento
+// nesse dia ainda, sugere 09:00.
+function nextEventSlot(dateISO) {
+  var dayEvents = allTasks.filter(function(t) {
+    return t.type === 'event' && t.due === dateISO && t.dueTime;
+  });
+  if (!dayEvents.length) return { h: 9, mi: 0 };
+  var maxMinutes = -1;
+  dayEvents.forEach(function(t) {
+    var p = t.dueTime.split(':').map(Number);
+    var mins = p[0] * 60 + p[1];
+    if (mins > maxMinutes) maxMinutes = mins;
+  });
+  var nextMinutes = maxMinutes + 15;
+  return { h: Math.floor(nextMinutes / 60) % 24, mi: nextMinutes % 60 };
+}
+
+// ── ENCADEAR EVENTOS SELECIONADOS (horário e cor) ───────────
+// Quando vários eventos estão marcados na coluna "Editar" e um deles tem
+// seu horário editado, os demais selecionados são reagendados em sequência
+// (15 min após o anterior, na mesma data do evento editado). Ao trocar a
+// cor de um evento selecionado, a mesma cor é aplicada a todos os outros.
+function cascadeSelectedEvents(anchorKey, anchorDateISO, anchorTimeStr) {
+  if (!anchorDateISO || !anchorTimeStr || !selectedKeys.has(anchorKey) || selectedKeys.size < 2) {
+    return Promise.resolve(0);
+  }
+  var group = getVisible().filter(function(t) {
+    return t.type === 'event' && selectedKeys.has(t.listId + '|' + t.taskId) && (t.listId + '|' + t.taskId) !== anchorKey;
+  });
+  if (!group.length) return Promise.resolve(0);
+  var dp = anchorDateISO.split('-').map(Number);
+  var tp = anchorTimeStr.split(':').map(Number);
+  var cursor = tp[0] * 60 + tp[1] + 15;
+  var calls = group.map(function(t) {
+    var h = Math.floor(cursor / 60) % 24, mi = cursor % 60;
+    cursor += 15;
+    return gsCall('updateEventDate', [t.taskId, dp[0], dp[1], dp[2], h, mi]).then(function(res) {
+      t.due = res.due; t.dueTime = res.dueTime;
+    });
+  });
+  return Promise.all(calls).then(function() { return group.length; });
+}
+
+function cascadeSelectedEventColor(anchorKey, colorId) {
+  if (!selectedKeys.has(anchorKey) || selectedKeys.size < 2) return Promise.resolve(0);
+  var others = allTasks.filter(function(t) {
+    return t.type === 'event' && selectedKeys.has(t.listId + '|' + t.taskId) && (t.listId + '|' + t.taskId) !== anchorKey;
+  });
+  if (!others.length) return Promise.resolve(0);
+  var calls = others.map(function(t) {
+    return gsCall('updateEventColor', [t.taskId, colorId]).then(function() { t.color = colorId; });
+  });
+  return Promise.all(calls).then(function() { return others.length; });
+}
+
+// ── ENCADEAR TAREFAS SELECIONADAS (mesma data) ──────────────
+// Igual à lógica dos eventos acima, mas para Tarefas: como elas não têm
+// horário (só data), a data editada é aplicada IGUAL a todas as outras
+// tarefas marcadas na coluna "Editar" (sem escalonar 15 em 15 minutos,
+// que só faz sentido para eventos com horário).
+function cascadeSelectedTasks(anchorKey, dateISO) {
+  if (!selectedKeys.has(anchorKey) || selectedKeys.size < 2) return Promise.resolve(0);
+  var group = getVisible().filter(function(t) {
+    return t.type !== 'event' && selectedKeys.has(t.listId + '|' + t.taskId) && (t.listId + '|' + t.taskId) !== anchorKey;
+  });
+  if (!group.length) return Promise.resolve(0);
+  var isoArg = dateISO ? dateISO + 'T00:00:00.000Z' : null;
+  var calls = group.map(function(t) {
+    return gsCall('updateDate', [t.listId, t.taskId, isoArg]).then(function() { t.due = dateISO; });
+  });
+  return Promise.all(calls).then(function() { return group.length; });
+}
+
+// ── CABEÇALHO/LINHA FIXOS ──────────────────────────────────
+function updateStickyOffsets() {
+  var trNewEl = document.querySelector('#main thead tr.tr-new');
+  document.documentElement.style.setProperty('--headerrow-top', (trNewEl ? trNewEl.offsetHeight : 0) + 'px');
+}
+
+// ── COLUNAS REDIMENSIONÁVEIS ─────────────────────────────────
+// Só a coluna Título pode ser arrastada para redimensionar (e o tamanho
+// escolhido é lembrado via localStorage). Todas as outras ficam do
+// tamanho mínimo necessário e não têm alça de arraste. A coluna Dia
+// acompanha o texto de cada linha (recalculado a cada render()); a
+// coluna Notas tem largura fixa equivalente a ~50 caracteres — o texto
+// que não couber fica cortado com reticências e aparece completo no
+// popup ao passar o mouse por cima (ver scheduleNotesPopover).
+var COL_WIDTHS_KEY = 'gtm-col-widths';
+var RESIZABLE_COLS = ['col-title'];
+var NOTES_WIDTH_CHARS = 50;
+var NOTES_COL_WIDTH_PX = 340; // recalculado em initColumnResize(); valor inicial só de segurança
+
+function measureTextWidth(text, refEl) {
+  var span = document.createElement('span');
+  var cs = getComputedStyle(refEl);
+  span.style.position = 'absolute';
+  span.style.visibility = 'hidden';
+  span.style.whiteSpace = 'nowrap';
+  span.style.fontFamily = cs.fontFamily;
+  span.style.fontSize = cs.fontSize;
+  span.style.fontWeight = cs.fontWeight;
+  span.style.letterSpacing = cs.letterSpacing;
+  span.style.textTransform = cs.textTransform;
+  span.textContent = text;
+  document.body.appendChild(span);
+  var w = span.getBoundingClientRect().width;
+  document.body.removeChild(span);
+  return w;
+}
+
+function loadColWidths() {
+  try { return JSON.parse(localStorage.getItem(COL_WIDTHS_KEY) || '{}'); } catch (e) { return {}; }
+}
+
+function saveColWidth(key, width) {
+  var saved = loadColWidths();
+  saved[key] = width;
+  try { localStorage.setItem(COL_WIDTHS_KEY, JSON.stringify(saved)); } catch (e) { /* ignore */ }
+}
+
+function headerFitWidth(th) {
+  var label = th.textContent.trim();
+  if (!label) return 44; // colunas sem texto no cabeçalho (ex.: ação de excluir)
+  var sortExtra = th.classList.contains('sort') ? 16 : 0;
+  return Math.ceil(measureTextWidth(label, th)) + 30 + sortExtra + 10;
+}
+
+// Largura inicial (antes de qualquer ajuste manual) da coluna Título —
+// generosa, para já mostrar bastante texto, bem maior do que caberia só
+// no título do cabeçalho.
+var RESIZABLE_DEFAULT_WIDTH = { 'col-title': 260 };
+
+// Limites ao redimensionar Título/Notas. O máximo "estático" (640) é só
+// uma trava de segurança — o limite que realmente importa é calculado na
+// hora (maxWidthForResizable), com base no espaço de fato disponível na
+// janela, para a tabela NUNCA ficar mais larga do que a área visível.
+// O mínimo evita que essas colunas fiquem "travadas" pequenas demais.
+var MAX_RESIZABLE_WIDTH = 640;
+var MIN_RESIZABLE_WIDTH = 120;
+
+// Quanto de espaço sobra para uma coluna redimensionável (Título ou Notas)
+// sem que a tabela precise ficar mais larga que a área visível de
+// .table-wrap. Soma a largura atual de todas as OUTRAS colunas e subtrai
+// da largura disponível do contêiner — o resultado é o teto real, que se
+// adapta ao tamanho da janela do navegador (inclusive ao redimensioná-la).
+function maxWidthForResizable(excludeTh) {
+  var wrap = document.querySelector('.table-wrap');
+  if (!wrap) return MAX_RESIZABLE_WIDTH;
+  var cs = getComputedStyle(wrap);
+  var avail = wrap.clientWidth - parseFloat(cs.paddingLeft || 0) - parseFloat(cs.paddingRight || 0) - 4;
+  var others = 0;
+  document.querySelectorAll('#main thead th').forEach(function(t) {
+    if (t !== excludeTh) others += t.getBoundingClientRect().width;
+  });
+  return Math.max(MIN_RESIZABLE_WIDTH, Math.min(MAX_RESIZABLE_WIDTH, avail - others));
+}
+
+// Reaplica o teto atual às colunas redimensionáveis sem alterar a
+// preferência salva — usado ao redimensionar a JANELA do navegador (não a
+// coluna), para a tabela se ajustar de volta caso a janela encolha.
+function reclampResizableWidths() {
+  RESIZABLE_COLS.forEach(function(key) {
+    var th = document.querySelector('#main thead th[data-col="' + key + '"]');
+    if (!th) return;
+    var current = th.getBoundingClientRect().width;
+    var max = maxWidthForResizable(th);
+    if (current > max) th.style.width = max + 'px';
+  });
+}
+
+function initColumnResize() {
+  var ths = document.querySelectorAll('#main thead th');
+  var saved = loadColWidths();
+
+  ths.forEach(function(th) {
+    var key = th.dataset.col;
+    if (!key) return;
+
+    var resizable = RESIZABLE_COLS.indexOf(key) > -1;
+
+    // A coluna Dia tem sua própria lógica (autoSizeDueColumn, chamada a
+    // cada render()) — aqui só aplicamos um valor mínimo antes de haver
+    // linhas na tabela.
+    if (key === 'col-due') {
+      th.style.width = headerFitWidth(th) + 'px';
+      return;
+    }
+
+    // Notas tem largura fixa (~50 caracteres) — não é mais arrastável; o
+    // texto que não couber some com reticências e aparece completo no
+    // popup ao passar o mouse por cima. Guarda o valor calculado em
+    // NOTES_COL_WIDTH_PX para o render() aplicar o mesmo limite direto em
+    // cada célula (max-width), não só no cabeçalho — assim a coluna fica
+    // presa nesse tamanho mesmo se o navegador não respeitar a largura
+    // "de coluna" do table-layout:fixed para linhas com texto muito longo.
+    if (key === 'col-notes') {
+      var sample = new Array(NOTES_WIDTH_CHARS + 1).join('n');
+      NOTES_COL_WIDTH_PX = Math.ceil(measureTextWidth(sample, th)) + 24;
+      th.style.width = NOTES_COL_WIDTH_PX + 'px';
+      th.style.maxWidth = NOTES_COL_WIDTH_PX + 'px';
+      return;
+    }
+
+    if (saved[key]) {
+      var savedWidth = resizable ? Math.min(Math.max(saved[key], MIN_RESIZABLE_WIDTH), maxWidthForResizable(th)) : saved[key];
+      th.style.width = savedWidth + 'px';
+    } else if (resizable) {
+      th.style.width = Math.min(RESIZABLE_DEFAULT_WIDTH[key] || 220, maxWidthForResizable(th)) + 'px';
+    } else {
+      th.style.width = Math.max(headerFitWidth(th), 30) + 'px';
+    }
+
+    if (!resizable) return;
+
+    var handle = document.createElement('div');
+    handle.className = 'col-resize-handle';
+    th.appendChild(handle);
+
+    handle.addEventListener('click', function(e) { e.stopPropagation(); });
+
+    handle.addEventListener('mousedown', function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      var startX = e.pageX;
+      var startWidth = th.getBoundingClientRect().width;
+      handle.classList.add('resizing');
+      document.body.style.cursor = 'col-resize';
+
+      function onMove(ev) {
+        var maxNow = maxWidthForResizable(th);
+        var newWidth = Math.max(MIN_RESIZABLE_WIDTH, Math.min(maxNow, Math.round(startWidth + (ev.pageX - startX))));
+        th.style.width = newWidth + 'px';
+      }
+      function onUp() {
+        document.removeEventListener('mousemove', onMove);
+        document.removeEventListener('mouseup', onUp);
+        handle.classList.remove('resizing');
+        document.body.style.cursor = '';
+        saveColWidth(key, Math.round(th.getBoundingClientRect().width));
+        updateStickyOffsets();
+      }
+      document.addEventListener('mousemove', onMove);
+      document.addEventListener('mouseup', onUp);
+    });
+  });
+}
+
+// Ajusta a largura da coluna Dia ao texto mais largo entre as linhas
+// visíveis (data, ou data + hora). Chamada a cada render(); não tem
+// alça de arraste — não é possível redimensionar manualmente.
+function autoSizeDueColumn() {
+  var th = document.querySelector('#main thead th.col-due');
+  if (!th) return;
+  var cells = document.querySelectorAll('#main tbody td.col-due');
+  var max = 0;
+  cells.forEach(function(td) {
+    if (td.querySelector('input')) return; // célula em edição: ignora
+    var w = measureTextWidth(td.textContent.trim(), td);
+    if (w > max) max = w;
+  });
+  if (!max) max = measureTextWidth(th.textContent.trim(), th) + 16;
+  th.style.width = Math.max(Math.ceil(max) + 26, 30) + 'px';
+}
+
+// ── ORDEM DAS COLUNAS (arrastar o cabeçalho) ─────────────────
+// Arrastar qualquer cabeçalho (fora da alcinha de redimensionar, na borda
+// direita) para uma nova posição reordena a coluna. A ordem escolhida é
+// lembrada (localStorage) e usada nas próximas vezes que a página abrir.
+var DEFAULT_COLUMN_ORDER = ['col-chk', 'col-num', 'col-sel', 'col-title', 'col-list', 'col-due', 'col-notes', 'col-act'];
+var COL_ORDER_KEY = 'gtm-col-order';
+var columnOrder = DEFAULT_COLUMN_ORDER.slice();
+
+function loadColumnOrder() {
+  try {
+    var saved = JSON.parse(localStorage.getItem(COL_ORDER_KEY) || 'null');
+    if (Array.isArray(saved) && saved.length === DEFAULT_COLUMN_ORDER.length &&
+        DEFAULT_COLUMN_ORDER.every(function(k) { return saved.indexOf(k) > -1; })) {
+      return saved;
+    }
+  } catch (e) { /* ignore */ }
+  return DEFAULT_COLUMN_ORDER.slice();
+}
+
+function saveColumnOrder() {
+  try { localStorage.setItem(COL_ORDER_KEY, JSON.stringify(columnOrder)); } catch (e) { /* ignore */ }
+}
+
+// Reordena os próprios elementos <th> do cabeçalho para refletir columnOrder.
+function applyColumnOrderToHeader() {
+  var headRow = document.querySelector('#main thead tr:not(.tr-new)');
+  if (!headRow) return;
+  var map = {};
+  Array.prototype.forEach.call(headRow.children, function(th) {
+    var key = th.dataset.col;
+    if (key) map[key] = th;
+  });
+  columnOrder.forEach(function(key) {
+    if (map[key]) headRow.appendChild(map[key]);
+  });
+}
+
+function initColumnReorder() {
+  var ths = document.querySelectorAll('#main thead th');
+  ths.forEach(function(th) {
+    th.classList.add('col-draggable');
+    th.addEventListener('mousedown', function(e) {
+      if (e.target.classList.contains('col-resize-handle')) return;
+      var startX = e.pageX;
+      var dragging = false;
+      var draggedKey = th.dataset.col;
+      if (!draggedKey) return;
+
+      function clearDropMarks() {
+        document.querySelectorAll('#main thead th').forEach(function(t) {
+          t.classList.remove('col-drop-before', 'col-drop-after');
+        });
+      }
+
+      function targetFrom(ev) {
+        var el = document.elementFromPoint(ev.clientX, ev.clientY);
+        return el && el.closest ? el.closest('#main thead th') : null;
+      }
+
+      function onMove(ev) {
+        if (!dragging && Math.abs(ev.pageX - startX) > 6) {
+          dragging = true;
+          th.classList.add('col-dragging');
+        }
+        if (!dragging) return;
+        var targetTh = targetFrom(ev);
+        clearDropMarks();
+        if (targetTh && targetTh !== th) {
+          var rect = targetTh.getBoundingClientRect();
+          var before = ev.clientX < rect.left + rect.width / 2;
+          targetTh.classList.add(before ? 'col-drop-before' : 'col-drop-after');
+        }
+      }
+
+      function onUp(ev) {
+        document.removeEventListener('mousemove', onMove);
+        document.removeEventListener('mouseup', onUp);
+        th.classList.remove('col-dragging');
+        clearDropMarks();
+        if (!dragging) return;
+
+        var targetTh = targetFrom(ev);
+        if (targetTh && targetTh !== th) {
+          var targetKey = targetTh.dataset.col;
+          if (targetKey) {
+            var rect = targetTh.getBoundingClientRect();
+            var before = ev.clientX < rect.left + rect.width / 2;
+            columnOrder = columnOrder.filter(function(k) { return k !== draggedKey; });
+            var idx = columnOrder.indexOf(targetKey);
+            columnOrder.splice(before ? idx : idx + 1, 0, draggedKey);
+            saveColumnOrder();
+            applyColumnOrderToHeader();
+            render();
+          }
+        }
+      }
+
+      document.addEventListener('mousemove', onMove);
+      document.addEventListener('mouseup', onUp);
+    });
+  });
+}
+
+// ── INIT ──────────────────────────────────────────────────
+window.onload = function() {
+  columnOrder = loadColumnOrder();
+  applyColumnOrderToHeader();
+  initLangSwitch();
+  attachListeners();
+  initColumnResize();
+  initColumnReorder();
+  load(false);
+};
+
+function load(incluirConcluidas) {
+  showLoading(T('loading_tasks_events'));
+  google.script.run
+    .withSuccessHandler(function(lists) {
+      taskLists = lists;
+      buildListSelects(lists);
+      google.script.run
+        .withSuccessHandler(function(tasks) {
+          google.script.run
+            .withSuccessHandler(function(events) {
+              allTasks = tasks.concat(events);
+              showApp();
+              render();
+            })
+            .withFailureHandler(onError)
+            .getEvents(incluirConcluidas);
+        })
+        .withFailureHandler(onError)
+        .getTasks(incluirConcluidas);
+    })
+    .withFailureHandler(onError)
+    .getTaskLists();
+}
+
+// ── RENDER ────────────────────────────────────────────────
+function getVisible() {
+  const today = new Date().toISOString().split('T')[0];
+  return allTasks.filter(t => {
+    if (t.type === 'event' && !showEvents) return false;
+    if (t.type !== 'event' && !showTasks)  return false;
+    if (fList   && t.listId !== fList)   return false;
+    if (fStatus && t.status !== fStatus) return false;
+    if (fSearch) {
+      const q = fSearch.toLowerCase();
+      if (!t.title.toLowerCase().includes(q) && !t.notes.toLowerCase().includes(q)) return false;
+    }
+    return true;
+  }).sort((a, b) => {
+    const d = sortDir === 'asc' ? 1 : -1;
+    // Desempate por data/hora, sempre do mais recente para o mais antigo
+    // (independe da direção do sort principal) — usado como critério
+    // secundário quando o campo principal (ex.: Tipo) está igual.
+    function recentFirst() {
+      var ak = (a.due || '') + 'T' + (a.dueTime || '00:00');
+      var bk = (b.due || '') + 'T' + (b.dueTime || '00:00');
+      return ak < bk ? 1 : (ak > bk ? -1 : 0);
+    }
+    if (sortField === 'title') return d * a.title.localeCompare(b.title);
+    if (sortField === 'list') {
+      var cmp = a.listTitle.localeCompare(b.listTitle);
+      return cmp !== 0 ? d * cmp : recentFirst();
+    }
+    if (sortField === 'due')   return d * ((a.due || '9999') < (b.due || '9999') ? -1 : 1);
+    return 0;
+  });
+}
+
+function render() {
+  const today  = new Date().toISOString().split('T')[0];
+  const tbody  = document.getElementById('tbody');
+  const empty  = document.getElementById('empty');
+  const visible = getVisible();
+
+  document.getElementById('count').textContent = tCountItems(visible.length);
+
+  tbody.innerHTML = '';
+  var theadEl = document.querySelector('#main thead');
+  if (theadEl) {
+    var oldTrNew = theadEl.querySelector('tr.tr-new');
+    if (oldTrNew) oldTrNew.remove();
+    appendQuickAddRow(theadEl);
+  }
+
+  if (!visible.length) {
+    empty.classList.remove('hidden');
+  } else {
+    empty.classList.add('hidden');
+
+    visible.forEach(function(t, idx) {
+      const tr = document.createElement('tr');
+      tr.classList.add(idx % 2 === 0 ? 'zebra-a' : 'zebra-b');
+      if (t.status === 'completed') tr.classList.add('done');
+      const key = t.listId + '|' + t.taskId;
+      const isEvent = t.type === 'event';
+
+      // Número do item
+      const tdNum = ce('td', 'col-num');
+      tdNum.textContent = idx + 1;
+
+      // Concluir
+      const tdC = ce('td', 'col-chk');
+      const chk = document.createElement('input');
+      chk.type = 'checkbox';
+      chk.checked = t.status === 'completed';
+      if (isEvent) {
+        chk.addEventListener('change', function() { toggleEventStatusClient(t, chk.checked, tr); });
+      } else {
+        chk.addEventListener('change', function() { toggleStatus(t, chk.checked, tr); });
+      }
+      tdC.appendChild(chk);
+
+      // Cor (somente eventos) — mostrada como uma barrinha na borda esquerda
+      // desta mesma célula (igual ao efeito azul da linha "Nova tarefa").
+      // Clicar na barrinha abre o seletor de cor nativo.
+      if (isEvent) {
+        tdC.style.position = 'relative';
+        var colorHex = (EVENT_COLORS.find(function(c){return c.id === (t.color || DEFAULT_EVENT_COLOR);}) || {}).hex || '#F4511E';
+
+        const colorBar = document.createElement('div');
+        colorBar.className = 'color-bar';
+        colorBar.title = tf('color_tooltip_change', { name: colorName(t.color || DEFAULT_EVENT_COLOR) });
+        colorBar.style.background = colorHex;
+        colorBar.addEventListener('click', function(e) {
+          e.stopPropagation();
+          openColorPopover(colorBar, t.color || DEFAULT_EVENT_COLOR, function(newColor) {
+            var key2 = key;
+            var hex = (EVENT_COLORS.find(function(c){return c.id === newColor;}) || {}).hex || colorHex;
+            colorBar.style.background = hex;
+            callServer('updateEventColor', [t.taskId, newColor], function() {
+              t.color = newColor;
+              cascadeSelectedEventColor(key2, newColor).then(function(n) {
+                toast(n > 0 ? tf('toast_color_applied_n', { n: n + 1 }) : T('toast_color_updated'), true);
+                if (n > 0) render();
+              });
+            }, true);
+          });
+        });
+        tdC.appendChild(colorBar);
+      }
+
+      // Editar (seleção em lote — tarefas e eventos)
+      // Shift+clique seleciona/desmarca todo o intervalo desde a última
+      // caixa clicada até esta, igual ao comportamento comum de listas.
+      const tdSel = ce('td', 'col-sel');
+      const selChk = document.createElement('input');
+      selChk.type = 'checkbox';
+      selChk.checked = selectedKeys.has(key);
+      selChk.addEventListener('click', function(e) {
+        var checked = selChk.checked;
+        if (e.shiftKey && lastSelectedIdx !== null) {
+          var vis = getVisible();
+          var start = Math.min(lastSelectedIdx, idx);
+          var end = Math.max(lastSelectedIdx, idx);
+          for (var i = start; i <= end; i++) {
+            var vt = vis[i];
+            if (!vt) continue;
+            var vk = vt.listId + '|' + vt.taskId;
+            if (checked) selectedKeys.add(vk); else selectedKeys.delete(vk);
+          }
+          render();
+        } else {
+          toggleRowSelect(key, checked);
+        }
+        lastSelectedIdx = idx;
+      });
+      tdSel.appendChild(selChk);
+
+      // Title
+      const tdT = ce('td', 'col-title editable');
+      tdT.textContent = (isEvent ? '📅 ' : '') + (t.title || T('untitled'));
+      tdT.addEventListener('click', function() {
+        startEdit(tdT, t.title, function(v) {
+          var fn   = isEvent ? 'updateEventField' : 'updateField';
+          var args = isEvent ? [t.taskId, 'title', v] : [t.listId, t.taskId, 'title', v];
+          callServer(fn, args, function() {
+            t.title = v;
+            tdT.textContent = (isEvent ? '📅 ' : '') + v;
+            toast(T('toast_saved'), true);
+          }, true);
+        });
+      });
+
+      // Tipo (só "Tarefa" ou "Evento", igual ao Google Agenda — também
+      // controla a conversão entre os dois). Não expõe qual lista real do
+      // Google Tasks guarda a tarefa; todas as listas contam como "Tarefa".
+      const tdL = ce('td', 'col-list');
+      const sel = document.createElement('select'); sel.className = 'list-sel';
+      buildQuickTypeOptions(sel);
+      sel.value = isEvent ? '__calendar__' : '__task__';
+      sel.addEventListener('change', function() {
+        var newVal = sel.value;
+        var curVal = isEvent ? '__calendar__' : '__task__';
+        if (newVal === curVal) return;
+        if (newVal === '__calendar__' && !isEvent) {
+          sel.value = curVal;
+          // Se houver mais de uma tarefa marcada em "Editar", a conversão
+          // vira em grupo — inclui a tarefa clicada mesmo que ela própria
+          // não esteja marcada, para o popup sempre aparecer nesse caso.
+          var group = null;
+          if (selectedKeys.size > 1) {
+            var groupKeys = new Set(selectedKeys);
+            groupKeys.add(key);
+            group = getVisible().filter(function(x) {
+              return x.type !== 'event' && groupKeys.has(x.listId + '|' + x.taskId);
+            });
+          }
+          if (group && group.length > 1) {
+            openConvertModal(t, group);
+          } else {
+            convertTaskDirect(t);
+          }
+        } else if (newVal !== '__calendar__' && isEvent) {
+          var targetListId = resolveMainListId();
+          // Se houver mais de um evento marcado em "Editar", converte todos
+          // de uma vez (inclui o evento clicado mesmo que não esteja marcado).
+          var evGroup = null;
+          if (selectedKeys.size > 1) {
+            var evGroupKeys = new Set(selectedKeys);
+            evGroupKeys.add(key);
+            evGroup = getVisible().filter(function(x) {
+              return x.type === 'event' && evGroupKeys.has(x.listId + '|' + x.taskId);
+            });
+          }
+          if (evGroup && evGroup.length > 1) {
+            convertEventsToTaskBatch(evGroup, targetListId);
+          } else {
+            convertEventToTaskFlow(t, targetListId);
+          }
+        }
+      });
+      tdL.appendChild(sel);
+
+      // Due date
+      const tdD = ce('td', 'col-due editable');
+      tdD.textContent = t.due ? fmt(t.due) + (t.dueTime ? ' ' + t.dueTime : '') : '—';
+      if (t.due && t.due < today) tdD.classList.add('overdue');
+      else if (t.due === today)   tdD.classList.add('today');
+      tdD.addEventListener('click', function() {
+        if (isEvent) {
+          startEventDateEdit(tdD, t, function(dateVal, timeVal) {
+            var dt = new Date(dateVal + 'T' + (timeVal || '00:00'));
+            callServer('updateEventDate', [t.taskId, dt.getFullYear(), dt.getMonth() + 1, dt.getDate(), dt.getHours(), dt.getMinutes()], function(res) {
+              t.due = res.due; t.dueTime = res.dueTime;
+              tdD.classList.remove('overdue', 'today');
+              tdD.textContent = fmt(t.due) + (t.dueTime ? ' ' + t.dueTime : '');
+              if (t.due && t.due < today) tdD.classList.add('overdue');
+              else if (t.due === today)   tdD.classList.add('today');
+              cascadeSelectedEvents(key, t.due, t.dueTime).then(function(n) {
+                toast(n > 0 ? tf('toast_time_chained_n', { n: n + 1 }) : T('toast_event_updated'), true);
+                if (n > 0) render();
+              });
+            }, true);
+          });
+          return;
+        }
+        startDateEdit(tdD, t.due, function(v) {
+          const iso = v ? v : null;
+          callServer('updateDate', [t.listId, t.taskId, iso ? iso + 'T00:00:00.000Z' : null], function() {
+            t.due = iso;
+            tdD.classList.remove('overdue', 'today');
+            tdD.textContent = iso ? fmt(iso) : '—';
+            if (iso && iso < today)     tdD.classList.add('overdue');
+            else if (iso === today)     tdD.classList.add('today');
+            cascadeSelectedTasks(key, iso).then(function(n) {
+              toast(n > 0 ? tf('toast_date_chained_n', { n: n + 1 }) : T('toast_date_saved'), true);
+              if (n > 0) render();
+            });
+          }, true);
+        });
+      });
+
+      // Notes
+      const tdN = ce('td', 'col-notes editable');
+      tdN.style.maxWidth = NOTES_COL_WIDTH_PX + 'px';
+      tdN.textContent = t.notes || '—';
+      tdN.addEventListener('mouseenter', function() { scheduleNotesPopover(tdN, t.notes); });
+      tdN.addEventListener('mouseleave', hideNotesPopover);
+      tdN.addEventListener('click', function() {
+        hideNotesPopover();
+        startEdit(tdN, t.notes, function(v) {
+          var fn   = isEvent ? 'updateEventField' : 'updateField';
+          var args = isEvent ? [t.taskId, 'notes', v] : [t.listId, t.taskId, 'notes', v];
+          callServer(fn, args, function() {
+            t.notes = v; tdN.textContent = v || '—'; toast(T('toast_saved'), true);
+          }, true);
+        }, true, true);
+      });
+
+      // Delete
+      const tdA = ce('td', 'col-act');
+      const del = document.createElement('button'); del.className = 'btn-danger'; del.title = T('delete_title');
+      del.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg>';
+      del.addEventListener('click', function() { isEvent ? removeEvent(t, tr) : removeTask(t, tr); });
+      tdA.appendChild(del);
+
+      var cellMap = { 'col-chk': tdC, 'col-num': tdNum, 'col-sel': tdSel, 'col-title': tdT, 'col-list': tdL, 'col-due': tdD, 'col-notes': tdN, 'col-act': tdA };
+      columnOrder.forEach(function(colKey) { if (cellMap[colKey]) tr.appendChild(cellMap[colKey]); });
+      tbody.appendChild(tr);
+    });
+  }
+
+  autoSizeDueColumn();
+}
+
+// ── LINHA DE ADIÇÃO RÁPIDA ─────────────────────────────────
+function appendQuickAddRow(container) {
+  const trNew = ce('tr', 'tr-new');
+
+  const tdNum = ce('td', 'col-num');
+  const tdChk = ce('td', 'col-chk');
+  const tdSel = ce('td', 'col-sel');
+
+  const tdTitle = ce('td', 'col-title');
+  const titleInput = document.createElement('input');
+  titleInput.type = 'text';
+  titleInput.placeholder = T('quickadd_placeholder');
+  tdTitle.appendChild(titleInput);
+
+  // O <td> em si fica com o display padrão (table-cell), igual às outras
+  // colunas — só o conteúdo interno usa flex, numa div própria. Colocar
+  // display:flex direto na célula fazia essa coluna sair da altura comum
+  // da linha (deixando a barrinha branca de baixo mais grossa só aqui).
+  const tdList = ce('td', 'col-list');
+  const listRow = document.createElement('div');
+  listRow.style.display = 'flex';
+  listRow.style.alignItems = 'center';
+  listRow.style.gap = '6px';
+  tdList.appendChild(listRow);
+  const listSelect = document.createElement('select'); listSelect.className = 'list-sel';
+  buildQuickTypeOptions(listSelect);
+  var mainListId = resolveMainListId();
+  listRow.appendChild(listSelect);
+
+  // A cor só existe para eventos; fica como uma bolinha pequena ao lado do
+  // campo Tipo (Tarefa/Evento). Clicar nela abre a mesma paleta de cores
+  // usada nas linhas existentes.
+  var colorVal = DEFAULT_EVENT_COLOR;
+  const colorBlock = document.createElement('div');
+  colorBlock.className = 'color-dot';
+  colorBlock.style.background = (EVENT_COLORS.find(function(c){return c.id === colorVal;}) || {}).hex || '#F4511E';
+  colorBlock.title = tf('color_tooltip_event', { name: colorName(colorVal) });
+  colorBlock.addEventListener('click', function(e) {
+    e.stopPropagation();
+    openColorPopover(colorBlock, colorVal, function(newColor) {
+      colorVal = newColor;
+      var c = EVENT_COLORS.find(function(c){return c.id === colorVal;}) || {};
+      colorBlock.style.background = c.hex || '#F4511E';
+      colorBlock.title = tf('color_tooltip_event', { name: colorName(colorVal) });
+    });
+  });
+  listRow.appendChild(colorBlock);
+
+  const todayDate  = new Date();
+  const todayISO   = todayDate.getFullYear() + '-' + pad2(todayDate.getMonth() + 1) + '-' + pad2(todayDate.getDate());
+  const todayBR    = pad2(todayDate.getDate()) + '/' + pad2(todayDate.getMonth() + 1) + '/' + String(todayDate.getFullYear()).slice(-2);
+
+  const tdDate = ce('td', 'col-due');
+  const dateInput = document.createElement('input'); dateInput.type = 'date'; dateInput.value = todayISO;
+  tdDate.appendChild(dateInput);
+
+  const tdNotes = ce('td', 'col-notes');
+  tdNotes.style.maxWidth = NOTES_COL_WIDTH_PX + 'px';
+  const notesInput = document.createElement('input'); notesInput.type = 'text'; notesInput.placeholder = T('notes_placeholder');
+  notesInput.value = todayBR + ' - ';
+  tdNotes.appendChild(notesInput);
+
+  const tdAct = ce('td', 'col-act');
+  const addBtn = document.createElement('button'); addBtn.className = 'add-btn'; addBtn.title = T('add_btn_title'); addBtn.textContent = '+';
+  tdAct.appendChild(addBtn);
+
+  function submit() {
+    var title = titleInput.value.trim();
+    if (!title) return;
+    var listVal  = listSelect.value;
+    var dateVal  = dateInput.value;
+    var notesVal = notesInput.value.trim();
+
+    addBtn.disabled = true;
+
+    if (listVal === '__calendar__') {
+      var evDateStr = dateVal || todayISO;
+      var slot = nextEventSlot(evDateStr);
+      var dp = evDateStr.split('-').map(Number);
+      var base = new Date(dp[0], dp[1] - 1, dp[2], slot.h, slot.mi);
+      gsCall('createEventQuick', [title, base.getFullYear(), base.getMonth() + 1, base.getDate(), base.getHours(), base.getMinutes(), notesVal, colorVal])
+        .then(function(created) {
+          allTasks.unshift(created);
+          render();
+          toast(T('toast_event_created'), true);
+        })
+        .catch(function(e) { addBtn.disabled = false; toast(T('error_prefix') + e.message, false); });
+    } else {
+      var targetListId = mainListId || (taskLists.length ? taskLists[0].id : null);
+      if (!targetListId) { addBtn.disabled = false; toast(T('toast_no_list_found'), false); return; }
+      gsCall('createTask', [targetListId, title, dateVal || null, notesVal || null])
+        .then(function(created) {
+          var list = taskLists.find(function(l) { return l.id === targetListId; });
+          created.type = 'task';
+          created.listId = targetListId;
+          created.listTitle = list ? list.title : '';
+          created.dueTime = '';
+          allTasks.unshift(created);
+          render();
+          toast(T('toast_task_created'), true);
+        })
+        .catch(function(e) { addBtn.disabled = false; toast(T('error_prefix') + e.message, false); });
+    }
+  }
+
+  titleInput.addEventListener('keydown', function(e) { if (e.key === 'Enter') { e.preventDefault(); submit(); } });
+  addBtn.addEventListener('click', submit);
+
+  var cellMapNew = { 'col-chk': tdChk, 'col-num': tdNum, 'col-sel': tdSel, 'col-title': tdTitle, 'col-list': tdList, 'col-due': tdDate, 'col-notes': tdNotes, 'col-act': tdAct };
+  columnOrder.forEach(function(colKey) { if (cellMapNew[colKey]) trNew.appendChild(cellMapNew[colKey]); });
+  container.insertBefore(trNew, container.firstChild);
+}
+
+// ── TIPO DA LINHA DE NOVA TAREFA (só "Tarefa" ou "Evento") ──
+// Diferente do seletor "Lista" das linhas já existentes (que precisa
+// mostrar todas as listas reais, para poder mover uma tarefa entre elas),
+// a linha de adicionar não expõe as listas do usuário — só o tipo do item.
+// "Tarefa" é resolvida para a lista real via resolveMainListId().
+function buildQuickTypeOptions(selectEl) {
+  selectEl.innerHTML = '';
+  var oTask = document.createElement('option'); oTask.value = '__task__'; oTask.textContent = T('type_task'); oTask.selected = true;
+  var oCal = document.createElement('option'); oCal.value = '__calendar__'; oCal.textContent = T('type_event');
+  selectEl.appendChild(oTask);
+  selectEl.appendChild(oCal);
+}
+
+// ── LISTA COMBINADA (listas de tarefas + Calendar) ─────────
+function buildListOptions(selectEl, currentValue) {
+  selectEl.innerHTML = '';
+  taskLists.forEach(function(l) {
+    var o = document.createElement('option');
+    o.value = l.id; o.textContent = displayTitle(l.title); o.selected = l.id === currentValue;
+    selectEl.appendChild(o);
+  });
+  var oc = document.createElement('option');
+  oc.value = '__calendar__'; oc.textContent = T('type_event'); oc.selected = currentValue === '__calendar__';
+  selectEl.appendChild(oc);
+}
+
+// ── INLINE EDIT ───────────────────────────────────────────
+// prependDate: usado nas Notas — abre a edição com uma linha nova em
+// branco no topo (já com a data de hoje), empurrando o texto existente
+// para baixo, mantendo o histórico de registros anteriores.
+function startEdit(cell, cur, onSave, multi, prependDate) {
+  if (cell.querySelector('input,textarea')) return;
+  var prev = cell.textContent; cell.textContent = '';
+  var el = document.createElement(multi ? 'textarea' : 'input');
+  var initial = cur || '';
+  var caretPos = null;
+  if (prependDate) {
+    var d = new Date();
+    var label = pad2(d.getDate()) + '/' + pad2(d.getMonth() + 1) + '/' + String(d.getFullYear()).slice(-2) + ': ';
+    initial = label + '\n' + initial;
+    caretPos = label.length;
+  }
+  el.value = initial; el.className = multi ? 'edit-input' : 'edit-input edit-input-title'; if (multi) el.rows = 4;
+  cell.appendChild(el); el.focus();
+  if (caretPos !== null) el.setSelectionRange(caretPos, caretPos); else el.select();
+  var done = false;
+  var save = function() {
+    if (done) return; done = true;
+    var v = el.value;
+    var noChange = prependDate ? (v === initial) : (v.trim() === (cur || '').trim());
+    if (noChange) { cell.textContent = prev; return; }
+    var vTrim = v.trim();
+    cell.textContent = vTrim || prev;
+    onSave(vTrim);
+  };
+  var cancel = function() { if(done) return; done=true; cell.textContent=prev; };
+  el.addEventListener('blur', save);
+  el.addEventListener('keydown', function(e) {
+    if (e.key==='Enter'&&!multi){e.preventDefault();el.blur();}
+    if (e.key==='Escape'){el.removeEventListener('blur',save);cancel();}
+  });
+}
+
+function startDateEdit(cell, cur, onSave) {
+  if (cell.querySelector('input')) return;
+  var prev = cell.textContent;
+  var prevCls = Array.from(cell.classList).filter(function(c){return c==='overdue'||c==='today';});
+  cell.textContent = '';
+  var inp = document.createElement('input'); inp.type='date'; inp.value=cur||''; inp.className='edit-input';
+  cell.appendChild(inp); inp.focus();
+  var done = false;
+  var save = function() { if(done) return; done=true; onSave(inp.value); };
+  inp.addEventListener('blur', save);
+  inp.addEventListener('keydown', function(e) {
+    if (e.key==='Enter') inp.blur();
+    if (e.key==='Escape'){inp.removeEventListener('blur',save);done=true;cell.textContent=prev;prevCls.forEach(function(c){cell.classList.add(c);});}
+  });
+}
+
+// ── EDIÇÃO DE DATA/HORÁRIO DE EVENTOS ──────────────────────
+function startEventDateEdit(cell, t, onSave) {
+  if (cell.querySelector('input')) return;
+  var prev = cell.textContent;
+  cell.textContent = '';
+  var wrap = document.createElement('div'); wrap.style.display = 'flex'; wrap.style.gap = '3px'; wrap.style.width = '100%'; wrap.style.alignItems = 'center';
+  var dInp = document.createElement('input'); dInp.type = 'date'; dInp.value = t.due || ''; dInp.className = 'dt-edit-input'; dInp.style.flex = '1'; dInp.style.minWidth = '0';
+  var tInp = document.createElement('input'); tInp.type = 'time'; tInp.value = t.dueTime || '09:00'; tInp.className = 'dt-edit-input'; tInp.style.flex = '1'; tInp.style.minWidth = '0';
+  wrap.appendChild(dInp); wrap.appendChild(tInp);
+  cell.appendChild(wrap);
+  dInp.focus();
+  var done = false;
+  function save() { if (done) return; done = true; onSave(dInp.value, tInp.value); }
+  function cancel() { if (done) return; done = true; cell.textContent = prev; }
+  var blurTimer;
+  function scheduleMaybeSave() {
+    clearTimeout(blurTimer);
+    blurTimer = setTimeout(function() {
+      if (document.activeElement !== dInp && document.activeElement !== tInp) save();
+    }, 120);
+  }
+  dInp.addEventListener('blur', scheduleMaybeSave);
+  tInp.addEventListener('blur', scheduleMaybeSave);
+  [dInp, tInp].forEach(function(inp) {
+    inp.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') { e.preventDefault(); save(); }
+      if (e.key === 'Escape') { cancel(); }
+    });
+  });
+}
+
+// ── CONVERSÃO TAREFA <-> EVENTO ─────────────────────────────
+// Conversão direta (sem popup): usada quando não há mais de uma tarefa
+// selecionada. Usa a data/horário já existentes na própria tarefa (ou o
+// próximo horário livre do dia, se não houver horário definido).
+function convertTaskDirect(t) {
+  var dateVal = t.due || new Date().toISOString().split('T')[0];
+  var slot;
+  if (t.dueTime) {
+    var tp = t.dueTime.split(':').map(Number);
+    slot = { h: tp[0], mi: tp[1] };
+  } else {
+    slot = nextEventSlot(dateVal);
+  }
+  var dp = dateVal.split('-').map(Number);
+  gsCall('convertTaskToEvent', [t.listId, t.taskId, t.title, t.notes, dp[0], dp[1], dp[2], slot.h, slot.mi, DEFAULT_EVENT_COLOR])
+    .then(function(newItem) {
+      var idx = allTasks.findIndex(function(x) { return x.type !== 'event' && x.listId === t.listId && x.taskId === t.taskId; });
+      if (idx > -1) allTasks[idx] = newItem; else allTasks.unshift(newItem);
+      render();
+      toast(T('toast_converted_to_event'), true);
+    })
+    .catch(function(e) { toast(T('error_prefix') + e.message, false); render(); });
+}
+
+// Popup de conversão em grupo — só é aberto quando há mais de uma tarefa
+// selecionada (via "Editar"). Ao confirmar, a primeira tarefa (âncora)
+// recebe o horário informado e as demais são encadeadas automaticamente,
+// 15 minutos após a anterior, todas no mesmo dia.
+function openConvertModal(t, group) {
+  convertingTask = t;
+  convertingGroup = (group && group.length > 1) ? group : null;
+  var dateVal = t.due || new Date().toISOString().split('T')[0];
+  document.getElementById('cv-date').value = dateVal;
+  if (t.dueTime) {
+    document.getElementById('cv-time').value = t.dueTime;
+  } else {
+    var slot = nextEventSlot(dateVal);
+    document.getElementById('cv-time').value = pad2(slot.h) + ':' + pad2(slot.mi);
+  }
+  buildColorOptions(document.getElementById('cv-color'), DEFAULT_EVENT_COLOR);
+  buildRecurOptions(document.getElementById('cv-recur'), dateVal, false);
+  var countEl = document.getElementById('cv-count');
+  if (convertingGroup) {
+    countEl.textContent = tf('cv_count_html', { n: convertingGroup.length });
+    countEl.classList.remove('hidden');
+  } else {
+    countEl.classList.add('hidden');
+  }
+  document.getElementById('convert-modal').classList.remove('hidden');
+}
+
+function closeConvertModal() {
+  document.getElementById('convert-modal').classList.add('hidden');
+  convertingTask = null;
+  convertingGroup = null;
+}
+
+function applyConvertToEvent() {
+  if (!convertingTask) return;
+  var dateVal = document.getElementById('cv-date').value;
+  var timeVal = document.getElementById('cv-time').value;
+  if (!dateVal || !timeVal) { toast(T('toast_informe_data_horario'), false); return; }
+  var colorVal = document.getElementById('cv-color').value;
+  var recurVal = document.getElementById('cv-recur').value;
+  var group = (convertingGroup && convertingGroup.length > 1) ? convertingGroup : [convertingTask];
+  var btn = document.getElementById('cv-apply');
+  btn.disabled = true; btn.textContent = T('btn_converting');
+
+  var dp = dateVal.split('-').map(Number);
+  var tp = timeVal.split(':').map(Number);
+  var cursor = tp[0] * 60 + tp[1];
+
+  var calls = group.map(function(gt) {
+    var h = Math.floor(cursor / 60) % 24, mi = cursor % 60;
+    cursor += 15;
+    return gsCall('convertTaskToEvent', [gt.listId, gt.taskId, gt.title, gt.notes, dp[0], dp[1], dp[2], h, mi, colorVal, recurVal])
+      .then(function(newItem) { return { gt: gt, newItem: newItem }; });
+  });
+
+  Promise.all(calls)
+    .then(function(results) {
+      results.forEach(function(r) {
+        var idx = allTasks.findIndex(function(x) { return x.type !== 'event' && x.listId === r.gt.listId && x.taskId === r.gt.taskId; });
+        if (idx > -1) allTasks[idx] = r.newItem; else allTasks.unshift(r.newItem);
+      });
+      if (group.length > 1) { selectedKeys.clear(); updateBulkBar(); }
+      btn.disabled = false; btn.textContent = T('btn_convert');
+      closeConvertModal();
+      render();
+      toast(group.length > 1 ? tf('toast_n_converted_to_events', { n: group.length }) : T('toast_converted_to_event'), true);
+    })
+    .catch(function(e) {
+      btn.disabled = false; btn.textContent = T('btn_convert');
+      toast(T('error_prefix') + e.message, false);
+      render();
+    });
+}
+
+function convertEventToTaskFlow(t, newListId) {
+  gsCall('convertEventToTask', [t.taskId, newListId, t.title, t.notes, t.due])
+    .then(function(newItem) {
+      var idx = allTasks.findIndex(function(x) { return x.type === 'event' && x.taskId === t.taskId; });
+      if (idx > -1) allTasks[idx] = newItem; else allTasks.unshift(newItem);
+      render();
+      toast(T('toast_converted_to_task'), true);
+    })
+    .catch(function(e) {
+      toast(T('error_prefix') + e.message, false);
+      render();
+    });
+}
+
+// Conversão em lote Evento → Tarefa: quando mais de um evento está marcado
+// em "Editar", trocar o Tipo de um deles converte TODOS os selecionados
+// de uma vez para a lista escolhida (sem popup — igual ao padrão já usado
+// para Dia/Cor em eventos: aplica direto e confirma com um toast).
+function convertEventsToTaskBatch(group, newListId) {
+  var calls = group.map(function(gt) {
+    return gsCall('convertEventToTask', [gt.taskId, newListId, gt.title, gt.notes, gt.due])
+      .then(function(newItem) { return { gt: gt, newItem: newItem }; });
+  });
+  Promise.all(calls)
+    .then(function(results) {
+      results.forEach(function(r) {
+        var idx = allTasks.findIndex(function(x) { return x.type === 'event' && x.taskId === r.gt.taskId; });
+        if (idx > -1) allTasks[idx] = r.newItem; else allTasks.unshift(r.newItem);
+      });
+      selectedKeys.clear();
+      updateBulkBar();
+      render();
+      toast(tf('toast_n_converted_to_tasks', { n: results.length }), true);
+    })
+    .catch(function(e) {
+      toast(T('error_prefix') + e.message, false);
+      render();
+    });
+}
+
+function toggleEventStatusClient(t, completed, tr) {
+  callServer('toggleEventStatus', [t.taskId, completed], function() {
+    t.status = completed ? 'completed' : 'needsAction';
+    tr.classList.toggle('done', completed);
+    toast(completed ? T('toast_completed_event') : T('toast_reopened_event'), true);
+  }, false);
+}
+
+function removeEvent(t, tr) {
+  deleteWithUndo(t);
+}
+
+// ── BULK SELECTION ────────────────────────────────────────
+function toggleRowSelect(key, checked) {
+  if (checked) selectedKeys.add(key); else selectedKeys.delete(key);
+  updateBulkBar();
+}
+
+function updateBulkBar() {
+  var bar = document.getElementById('bulk-bar');
+  var count = document.getElementById('bulk-count');
+  if (selectedKeys.size > 0) {
+    bar.classList.add('show');
+    count.textContent = tCountSelected(selectedKeys.size);
+  } else {
+    bar.classList.remove('show');
+  }
+}
+
+function gsCall(fn, args) {
+  return new Promise(function(resolve, reject) {
+    var runner = google.script.run.withSuccessHandler(resolve).withFailureHandler(reject);
+    runner[fn].apply(runner, args);
+  });
+}
+
+function pad2(n) { return (n < 10 ? '0' : '') + n; }
+
+function combineUTC(dateVal, timeVal) {
+  var dp = dateVal.split('-').map(Number);
+  var tp = (timeVal || '00:00').split(':').map(Number);
+  return new Date(Date.UTC(dp[0], dp[1] - 1, dp[2], tp[0], tp[1], 0));
+}
+
+function isoFromUTCDate(d) {
+  return d.getUTCFullYear() + '-' + pad2(d.getUTCMonth() + 1) + '-' + pad2(d.getUTCDate()) + 'T' +
+         pad2(d.getUTCHours()) + ':' + pad2(d.getUTCMinutes()) + ':00.000Z';
+}
+
+function openBulkModal() {
+  if (!selectedKeys.size) return;
+  document.getElementById('bulk-modal-count').textContent = tCountSelectedTasks(selectedKeys.size);
+  buildColorOptions(document.getElementById('bm-color'), DEFAULT_EVENT_COLOR);
+  document.getElementById('bulk-modal').classList.remove('hidden');
+}
+
+function closeBulkModal() {
+  document.getElementById('bulk-modal').classList.add('hidden');
+}
+
+function applyBulkSchedule() {
+  var dateVal = document.getElementById('bm-date').value;
+  var timeVal = document.getElementById('bm-time').value;
+  var mode = document.querySelector('input[name="bm-mode"]:checked').value;
+  var colorVal = document.getElementById('bm-color').value;
+  if (!dateVal) { toast(T('toast_choose_date'), false); return; }
+  if (!timeVal) { toast(T('toast_inform_start_time'), false); return; }
+  if (!selectedKeys.size) { toast(T('toast_select_task'), false); return; }
+
+  // Ordem = ordem exibida na tabela (respeita a ordenação/filtro atuais)
+  // Eventos não entram aqui: este modal reagenda apenas tarefas selecionadas.
+  var ordered = getVisible().filter(function(t) { return t.type !== 'event' && selectedKeys.has(t.listId + '|' + t.taskId); });
+  var visKeys = new Set(ordered.map(function(t) { return t.listId + '|' + t.taskId; }));
+  Array.from(selectedKeys).forEach(function(key) {
+    if (!visKeys.has(key)) {
+      var parts = key.split('|');
+      if (parts[0] === '__calendar__') return;
+      var t = allTasks.find(function(x) { return x.listId === parts[0] && x.taskId === parts[1]; });
+      if (t) ordered.push(t);
+    }
+  });
+  if (!ordered.length) { toast(T('toast_no_task_selected'), false); closeBulkModal(); return; }
+
+  var base = combineUTC(dateVal, timeVal);
+  var btn = document.getElementById('bm-apply');
+  btn.disabled = true; btn.textContent = T('btn_applying');
+
+  function finishApply(ok, fail, label) {
+    btn.disabled = false; btn.textContent = T('btn_apply');
+    selectedKeys.clear();
+    closeBulkModal();
+    render();
+    updateBulkBar();
+    toast(ok + ' ' + label + (fail ? tf('errors_suffix', { fail: fail }) : '') + '.', fail === 0);
+  }
+  function onApplyError(e) {
+    btn.disabled = false; btn.textContent = T('btn_apply');
+    toast(T('error_prefix') + e.message, false);
+  }
+
+  if (mode === 'event') {
+    var eventPlan = ordered.map(function(t, i) {
+      var start = new Date(base.getTime() + i * 15 * 60000);
+      var end = new Date(start.getTime() + 15 * 60000);
+      var startIso = isoFromUTCDate(start);
+      return { t: t, startIso: startIso, endIso: isoFromUTCDate(end), dueDate: startIso.split('T')[0] };
+    });
+
+    gsCall('bulkScheduleAsEvents', [eventPlan.map(function(p) {
+      return { listId: p.t.listId, taskId: p.t.taskId, title: p.t.title, notes: p.t.notes, due: p.dueDate, start: p.startIso, end: p.endIso, color: colorVal };
+    })]).then(function(results) {
+      var ok = 0, fail = 0;
+      results.forEach(function(r, idx) {
+        if (r.ok) { var p = eventPlan[idx]; p.t.due = p.dueDate; ok++; } else fail++;
+      });
+      finishApply(ok, fail, T('label_events_created_calendar'));
+    }).catch(onApplyError);
+
+  } else {
+    var tagRe = /^\[\d{2}:\d{2}\]\s*/;
+    var plan = ordered.map(function(t, i) {
+      var dt = new Date(base.getTime() + i * 15 * 60000);
+      var hh = pad2(dt.getUTCHours());
+      var mm = pad2(dt.getUTCMinutes());
+      var cleanNotes = (t.notes || '').replace(tagRe, '');
+      var newNotes = ('[' + hh + ':' + mm + '] ' + cleanNotes).trim();
+      return { t: t, iso: isoFromUTCDate(dt), hh: hh, mm: mm, notes: newNotes };
+    });
+
+    gsCall('bulkUpdateDate', [plan.map(function(p) { return { listId: p.t.listId, taskId: p.t.taskId, due: p.iso, notes: p.notes }; })])
+      .then(function(results) {
+        var ok = 0, fail = 0;
+        results.forEach(function(r, idx) {
+          if (r.ok) {
+            var p = plan[idx];
+            p.t.due = p.iso.split('T')[0];
+            p.t.dueTime = p.hh + ':' + p.mm;
+            p.t.notes = p.notes;
+            ok++;
+          } else fail++;
+        });
+        finishApply(ok, fail, T('label_tasks_rescheduled'));
+      }).catch(onApplyError);
+  }
+}
+
+// ── TASK OPS ──────────────────────────────────────────────
+function toggleStatus(t, completed, tr) {
+  var status = completed ? 'completed' : 'needsAction';
+  callServer('updateField', [t.listId, t.taskId, 'status', status], function() {
+    t.status = status;
+    tr.classList.toggle('done', completed);
+    toast(completed ? T('toast_completed_task') : T('toast_reopened_task'), true);
+  }, false);
+}
+
+function moveTask(t, newListId) {
+  var newTitle = taskLists.find(function(l){return l.id===newListId;});
+  callServer('createTask', [newListId, t.title, t.due, t.notes], function(created) {
+    callServer('deleteTask', [t.listId, t.taskId], function() {
+      t.listId   = newListId;
+      t.listTitle = newTitle ? newTitle.title : '';
+      t.taskId   = created.taskId;
+      render();
+      toast(T('toast_task_moved'), true);
+    }, false);
+  }, false);
+}
+
+function removeTask(t, tr) {
+  deleteWithUndo(t);
+}
+
+// ── EXCLUSÃO IMEDIATA COM "DESFAZER" ────────────────────────
+// Ao clicar em excluir, o item some na hora (sem popup de confirmação).
+// Em vez disso aparece um balão no canto inferior direito com um botão
+// "Desfazer" por alguns segundos. Se o item excluído fizer parte de uma
+// seleção múltipla ("Editar"), TODOS os itens selecionados são excluídos
+// juntos. O Google não tem "lixeira" para tarefas/eventos via API, então
+// desfazer recria um item equivalente (mesmo título/dia/notas/cor) — ele
+// recebe um ID novo, mas para o usuário é como se nada tivesse mudado.
+var _undoTimer = null;
+function deleteWithUndo(t) {
+  var key = t.listId + '|' + t.taskId;
+  var group = (selectedKeys.size > 1 && selectedKeys.has(key))
+    ? allTasks.filter(function(x) { return selectedKeys.has(x.listId + '|' + x.taskId); })
+    : [t];
+
+  var snapshot = group.map(function(x) {
+    return { type: x.type, listId: x.listId, listTitle: x.listTitle, taskId: x.taskId,
+             title: x.title, due: x.due, dueTime: x.dueTime, notes: x.notes, color: x.color };
+  });
+
+  group.forEach(function(x) {
+    allTasks = allTasks.filter(function(y) { return !(y.type === x.type && y.taskId === x.taskId && y.listId === x.listId); });
+    selectedKeys.delete(x.listId + '|' + x.taskId);
+  });
+  updateBulkBar();
+  render();
+
+  snapshot.forEach(function(x) {
+    var call = x.type === 'event' ? gsCall('deleteEvent', [x.taskId]) : gsCall('deleteTask', [x.listId, x.taskId]);
+    call.catch(function(e) { toast(T('error_prefix') + e.message, false); });
+  });
+
+  showUndoToast(snapshot);
+}
+
+function showUndoToast(snapshot) {
+  clearTimeout(_undoTimer);
+  var el    = document.getElementById('undo-toast');
+  var msgEl = document.getElementById('undo-toast-msg');
+  msgEl.textContent = snapshot.length > 1 ? tf('toast_n_deleted', { n: snapshot.length }) : T('toast_1_deleted');
+  el.classList.remove('hidden');
+
+  var oldBtn = document.getElementById('undo-toast-btn');
+  var btn = oldBtn.cloneNode(true);
+  oldBtn.parentNode.replaceChild(btn, oldBtn);
+  btn.addEventListener('click', function() {
+    clearTimeout(_undoTimer);
+    el.classList.add('hidden');
+    undoDelete(snapshot);
+  });
+
+  _undoTimer = setTimeout(function() { el.classList.add('hidden'); }, 7000);
+}
+
+function undoDelete(snapshot) {
+  var calls = snapshot.map(function(x) {
+    if (x.type === 'event') {
+      var dp = (x.due || new Date().toISOString().split('T')[0]).split('-').map(Number);
+      var tp = (x.dueTime || '09:00').split(':').map(Number);
+      return gsCall('createEventQuick', [x.title, dp[0], dp[1], dp[2], tp[0], tp[1], x.notes, x.color || DEFAULT_EVENT_COLOR])
+        .then(function(created) { allTasks.unshift(created); });
+    }
+    return gsCall('createTask', [x.listId, x.title, x.due || null, x.notes])
+      .then(function(created) {
+        allTasks.unshift({ type: 'task', listId: x.listId, listTitle: x.listTitle, taskId: created.taskId,
+                            title: created.title, status: 'needsAction', due: created.due, dueTime: x.dueTime, notes: created.notes });
+      });
+  });
+  Promise.all(calls)
+    .then(function() { render(); toast(T('toast_undo_done'), true); })
+    .catch(function(e) { toast(T('error_prefix') + e.message, false); render(); });
+}
+
+// ── SERVER CALL ───────────────────────────────────────────
+function callServer(fn, args, onSuccess, silent) {
+  var runner = google.script.run.withSuccessHandler(onSuccess).withFailureHandler(function(e) {
+    toast(T('error_prefix') + e.message, false);
+  });
+  runner[fn].apply(runner, args);
+}
+
+// ── LISTENERS ────────────────────────────────────────────
+function attachListeners() {
+  window.addEventListener('resize', updateStickyOffsets);
+  window.addEventListener('resize', reclampResizableWidths);
+
+  document.getElementById('refresh-btn').addEventListener('click', function() {
+    var mode = document.getElementById('filter-mode').value === '1';
+    load(mode);
+  });
+
+  document.getElementById('theme-toggle-btn').addEventListener('click', toggleTheme);
+
+  // Botão de apoio (Buy Me a Coffee) — só abre o link numa aba nova, não
+  // depende de nenhuma chamada ao servidor.
+  document.getElementById('coffee-btn').addEventListener('click', function() {
+    window.open('https://buymeacoffee.com/hugofga', '_blank', 'noopener');
+  });
+
+  // Se algo deixar a ordem/tamanho das colunas num estado estranho (ex.:
+  // uma coluna muito larga empurrando as outras para fora da tela), este
+  // botão apaga essas preferências salvas e recarrega a página do zero.
+  document.getElementById('reset-cols-btn').addEventListener('click', function() {
+    try {
+      localStorage.removeItem(COL_ORDER_KEY);
+      localStorage.removeItem(COL_WIDTHS_KEY);
+    } catch (e) { /* ignore */ }
+    location.reload();
+  });
+
+  // Fecha o popup de notas se a lista rolar (a posição fixa dele ficaria
+  // "descolada" da célula que o abriu).
+  var mainWrap = document.querySelector('.table-wrap');
+  if (mainWrap) mainWrap.addEventListener('scroll', hideNotesPopover);
+
+  document.getElementById('filter-mode').addEventListener('change', function() {
+    var mode = this.value === '1';
+    load(mode);
+  });
+
+  document.getElementById('filter-list').addEventListener('change', function() { fList = this.value; render(); });
+  document.getElementById('filter-status').addEventListener('change', function() { fStatus = this.value; render(); });
+  document.getElementById('search').addEventListener('input', function() { fSearch = this.value; render(); });
+  document.getElementById('filter-show-tasks').addEventListener('change', function() { showTasks = this.checked; render(); });
+  document.getElementById('filter-show-events').addEventListener('change', function() { showEvents = this.checked; render(); });
+
+  document.querySelectorAll('th.sort').forEach(function(th) {
+    th.addEventListener('click', function() {
+      var f = th.dataset.f;
+      sortDir = sortField === f ? (sortDir==='asc'?'desc':'asc') : 'asc';
+      sortField = f;
+      document.querySelectorAll('th.sort').forEach(function(t){t.classList.remove('asc','desc');});
+      th.classList.add(sortDir);
+      render();
+    });
+  });
+
+  document.getElementById('bulk-reschedule-btn').addEventListener('click', openBulkModal);
+  document.getElementById('bulk-clear').addEventListener('click', function() { selectedKeys.clear(); render(); updateBulkBar(); });
+
+  document.getElementById('bm-apply').addEventListener('click', applyBulkSchedule);
+  document.getElementById('bm-cancel').addEventListener('click', closeBulkModal);
+  document.getElementById('bm-close').addEventListener('click', closeBulkModal);
+  document.getElementById('bulk-modal-bg').addEventListener('click', closeBulkModal);
+
+  document.getElementById('cv-date').addEventListener('change', function() {
+    var slot = nextEventSlot(this.value);
+    document.getElementById('cv-time').value = pad2(slot.h) + ':' + pad2(slot.mi);
+    buildRecurOptions(document.getElementById('cv-recur'), this.value, true);
+  });
+  document.getElementById('cv-apply').addEventListener('click', applyConvertToEvent);
+  document.getElementById('cv-cancel').addEventListener('click', closeConvertModal);
+  document.getElementById('cv-close').addEventListener('click', closeConvertModal);
+  document.getElementById('convert-modal-bg').addEventListener('click', closeConvertModal);
+
+  document.addEventListener('keydown', function(e){ if(e.key==='Escape') { closeBulkModal(); closeConvertModal(); } });
+}
+
+// ── UI HELPERS ────────────────────────────────────────────
+function showLoading(msg) {
+  document.getElementById('loading-msg').textContent = msg || T('loading_default');
+  document.getElementById('loading').classList.remove('hidden');
+  ['header','toolbar','main'].forEach(function(id){document.getElementById(id).classList.add('hidden');});
+}
+
+function showApp() {
+  document.getElementById('loading').classList.add('hidden');
+  ['header','toolbar','main'].forEach(function(id){document.getElementById(id).classList.remove('hidden');});
+  setTimeout(updateStickyOffsets, 0);
+}
+
+function buildListSelects(lists) {
+  var fSel = document.getElementById('filter-list');
+  var prevF = fSel.value;
+  fSel.innerHTML = '<option value="" data-i18n="opt_all_lists">' + T('opt_all_lists') + '</option>';
+  lists.forEach(function(l) {
+    var o1 = document.createElement('option'); o1.value=l.id; o1.textContent=displayTitle(l.title); fSel.appendChild(o1);
+  });
+  var oCal = document.createElement('option'); oCal.value = '__calendar__'; oCal.textContent = T('type_event');
+  fSel.appendChild(oCal);
+  fSel.value = prevF;
+}
+
+function fmt(iso) {
+  if (!iso) return '—';
+  var p = iso.split('-'); return p[2]+'/'+p[1]+'/'+p[0];
+}
+
+function ce(tag, cls) {
+  var el = document.createElement(tag);
+  if (cls) el.className = cls;
+  return el;
+}
+
+var _tt;
+function toast(msg, ok) {
+  clearTimeout(_tt);
+  var el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = 'toast ' + (ok ? 'toast-ok' : 'toast-err');
+  _tt = setTimeout(function(){el.classList.add('hidden');}, 3000);
+}
+
+function onError(e) {
+  showApp();
+  toast(T('error_prefix') + (e.message || e), false);
+}
+</script>
+</body>
+</html>
