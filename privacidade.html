@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<!-- Arquivo: privacidade.html | Versão: 2 (política de privacidade pública para o Google Auth Platform; v2 adiciona seção de mecanismos de proteção de dados, pedida pela revisão de verificação OAuth do Google) -->
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Política de Privacidade — Task Easier</title>
+<style>
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:-apple-system,Roboto,Arial,sans-serif;color:#202124;background:#f8f9fa;line-height:1.6}
+  .wrap{max-width:680px;margin:0 auto;padding:48px 24px}
+  h1{font-size:24px;margin-bottom:4px}
+  .updated{color:#5f6368;font-size:13px;margin-bottom:24px}
+  h2{font-size:17px;margin:26px 0 8px}
+  p,li{margin-bottom:10px}
+  ul{margin-left:20px}
+  a{color:#1a73e8;text-decoration:none}
+  a:hover{text-decoration:underline}
+  .back{display:inline-block;margin-bottom:20px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="back" href="./index.html">← Task Easier</a>
+  <h1>Política de Privacidade — Task Easier</h1>
+  <p class="updated">Última atualização: 27/08/2026</p>
+
+  <p>O "Task Easier" ("a extensão") permite visualizar, criar, editar, concluir e excluir tarefas do Google Tasks e eventos do Google Calendar em uma única tabela, com um popup de acesso rápido para adicionar itens e ver os pendentes do dia.</p>
+
+  <h2>Quais dados a extensão acessa</h2>
+  <p>Ao instalar, a extensão solicita sua autorização (login do Google, via <code>chrome.identity</code>) para acessar, exclusivamente na sua própria conta Google:</p>
+  <ul>
+    <li><strong>Google Tasks</strong> — ler e escrever suas listas e tarefas.</li>
+    <li><strong>Google Calendar</strong> — ler e escrever eventos criados ou editados por você através desta ferramenta.</li>
+  </ul>
+  <p>Nenhuma outra informação da sua Conta Google (e-mail, contatos, arquivos do Drive, etc.) é solicitada ou acessada.</p>
+
+  <h2>Como os dados são usados</h2>
+  <p>Todas as chamadas são feitas diretamente do seu navegador para os servidores do próprio Google (<code>tasks.googleapis.com</code> e <code>www.googleapis.com</code>), usando o token de acesso obtido no login. A extensão <strong>não possui servidor próprio</strong>, não envia, não armazena e não compartilha seus dados com nenhum servidor de terceiros. Nenhuma informação é coletada, vendida, usada para publicidade ou para treinar modelos de qualquer tipo.</p>
+
+  <h2>Contador de pendências (ícone da extensão)</h2>
+  <p>Para mostrar, no próprio ícone, a quantidade de tarefas/eventos pendentes do dia (como um contador de mensagens não lidas), a extensão consulta periodicamente (a cada poucos minutos, em segundo plano) as mesmas APIs do Google Tasks e Calendar já autorizadas. Essa consulta é só um recálculo local do número exibido — nenhum dado sai do seu navegador além das chamadas diretas ao Google.</p>
+
+  <h2>Armazenamento local</h2>
+  <p>A extensão guarda no armazenamento local do seu navegador (<code>localStorage</code>) apenas preferências de interface, como tema claro/escuro e idioma (PT-BR/EN) escolhidos. Nenhum dado de tarefas ou eventos é armazenado fora da sua própria conta Google.</p>
+
+  <h2>Compartilhamento de dados</h2>
+  <p>Não compartilhamos dados com terceiros, nem os usamos para qualquer finalidade além de exibir e gerenciar suas próprias tarefas e eventos, a seu pedido.</p>
+
+  <h2>Segurança e mecanismos de proteção de dados</h2>
+  <p>Adotamos as seguintes medidas para proteger os dados acessados por meio da sua Conta Google:</p>
+  <ul>
+    <li><strong>Criptografia em trânsito:</strong> toda comunicação entre o seu navegador e as APIs do Google (Tasks e Calendar) é feita exclusivamente por HTTPS/TLS. Nenhuma chamada é feita por conexão não criptografada.</li>
+    <li><strong>Sem armazenamento de dados sensíveis em servidor próprio:</strong> como a extensão não possui backend próprio, suas tarefas e eventos nunca saem do ecossistema do Google — não existe um banco de dados nosso onde esses dados fiquem retidos ou expostos a vazamento.</li>
+    <li><strong>Token de acesso tratado com escopo mínimo e vida curta:</strong> o token OAuth obtido no login concede apenas os escopos de Tasks e Calendar (nunca acesso amplo à conta), é gerenciado pelo próprio mecanismo de autenticação do Google (<code>chrome.identity</code> na extensão / Google Identity Services no app web) e não é persistido em texto plano por nós além do armazenamento seguro padrão do navegador/SO usado por esses mecanismos.</li>
+    <li><strong>Princípio do menor privilégio:</strong> solicitamos apenas os escopos estritamente necessários para a funcionalidade oferecida (Tasks e Calendar), nunca escopos adicionais "por precaução".</li>
+    <li><strong>Conformidade com as políticas do Google:</strong> o uso dos dados obtidos via Google Tasks/Calendar API segue a <a href="https://developers.google.com/terms/api-services-user-data-policy" target="_blank" rel="noopener">Google API Services User Data Policy</a>, incluindo os requisitos de Uso Limitado (Limited Use) — os dados são usados somente para fornecer e melhorar as funcionalidades voltadas ao usuário final descritas nesta política, nunca para publicidade, venda a terceiros ou treinamento de modelos de IA.</li>
+  </ul>
+
+  <h2>Retenção e exclusão de dados</h2>
+  <p>Como a extensão não mantém banco de dados próprio, não há dados "retidos" por ela: desinstalar a extensão ou revogar seu acesso em <a href="https://myaccount.google.com/permissions" target="_blank" rel="noopener">myaccount.google.com/permissions</a> encerra imediatamente qualquer acesso, sem deixar resíduos.</p>
+
+  <h2>Alterações nesta política</h2>
+  <p>Qualquer mudança relevante nesta política será refletida nesta mesma página, com a data de atualização revisada.</p>
+
+  <h2>Contato</h2>
+  <p>Dúvidas sobre esta política: hugofga@gmail.com</p>
+</div>
+</body>
+</html>
