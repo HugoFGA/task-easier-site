@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<!-- Arquivo: index.html | Versão: 14 (página pública/homepage para o Google Auth Platform; v14 aposenta o app mobile estático em favor da versão Apps Script, resolvendo o aviso de fluxo OAuth inseguro) -->
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Task Easier</title>
+<link rel="icon" type="image/png" href="icon128.png">
+<link rel="apple-touch-icon" href="icon128.png">
+<script>
+// Quem acessa esta página pelo celular é levado direto para a versão mobile,
+// sem precisar procurar o link. Use "?desktop=1" na URL para forçar a versão
+// de computador mesmo no celular (ex.: testes).
+//
+// A partir da v14, a versão mobile passou a ser a do Apps Script (que roda
+// com a própria autenticação do Google, sem cliente OAuth próprio) em vez do
+// antigo app estático (mobile-app/app.html) — isso elimina o aviso de
+// "fluxo OAuth inseguro" do cliente "Task Easier for Smartphone" no Google
+// Cloud, já que esse cliente deixou de ser usado.
+(function () {
+  try {
+    if (location.search.indexOf('desktop=1') > -1) return;
+    var ua = navigator.userAgent || '';
+    var isPhone = /iPhone|iPod|Windows Phone|BlackBerry|Android.*Mobile/i.test(ua);
+    if (isPhone) window.location.replace('https://script.google.com/macros/s/AKfycby2Kx7TAddEgFJNbD2GUk5YYxoEDXe0Xjha2mGSa-Gdl4kz0xZQqPoTiQ_6VEPHwRN02g/exec?view=mobile');
+  } catch (e) { /* ignore */ }
+})();
+</script>
+<style>
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:-apple-system,Roboto,Arial,sans-serif;color:#202124;background:#f8f9fa;line-height:1.6}
+  .wrap{max-width:640px;margin:0 auto;padding:48px 24px}
+  .top-row{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+  .logo{width:64px;height:64px;border-radius:14px;display:block}
+  .top-actions{display:flex;align-items:center;gap:12px;margin-top:8px;flex-wrap:wrap;justify-content:flex-end}
+  /* Larguras mínimas fixas: o texto muda de tamanho entre PT/EN, mas a
+     largura do botão/badge não pode mudar — senão a barra "pula" de layout
+     ao trocar o idioma (botões maiores empurram os vizinhos, quebram linha
+     em um idioma e não no outro, etc.). Cada valor cobre o texto mais longo
+     das duas línguas com folga; o texto fica centralizado dentro do espaço. */
+  .privacy-link-top{display:inline-block;min-width:160px;text-align:center;white-space:nowrap;font-size:13px;color:#5f6368;text-decoration:underline}
+  .privacy-link-top:hover{color:#1a73e8}
+  .coffee-btn-top{display:inline-flex;align-items:center;justify-content:center;gap:4px;min-width:88px;white-space:nowrap;background:#FFDD00;color:#1c1c1c;font-weight:600;font-size:12px;padding:5px 10px;border-radius:16px;text-decoration:none;box-shadow:0 1px 2px rgba(0,0,0,.12);transition:transform .1s,box-shadow .1s}
+  .coffee-btn-top:hover{transform:translateY(-1px);box-shadow:0 2px 5px rgba(0,0,0,.18);text-decoration:none}
+  .install-btn-top{display:inline-flex;align-items:center;justify-content:center;gap:4px;min-width:190px;white-space:nowrap;background:#F4511E;color:#fff;font-weight:600;font-size:12px;padding:5px 10px;border-radius:16px;text-decoration:none;box-shadow:0 1px 2px rgba(0,0,0,.12);transition:transform .1s,box-shadow .1s}
+  .install-btn-top:hover{transform:translateY(-1px);box-shadow:0 2px 5px rgba(0,0,0,.18);text-decoration:none}
+  .ext-btn-top{display:inline-flex;align-items:center;justify-content:center;gap:4px;min-width:220px;white-space:nowrap;background:#eceff1;color:#5f6368;font-weight:600;font-size:12px;padding:5px 10px;border-radius:16px;text-decoration:none;cursor:default}
+  .site-version{position:fixed;right:8px;bottom:6px;font-size:10px;color:#5f6368;opacity:.55;pointer-events:none;background:rgba(255,255,255,.75);padding:1px 6px;border-radius:6px;text-align:right}
+  .lang-switch{display:flex;gap:4px}
+  .lang-btn{background:transparent;border:none;cursor:pointer;font-size:24px;line-height:1;padding:4px;border-radius:4px;opacity:.4;filter:grayscale(60%);transition:opacity .15s,filter .15s,background .15s}
+  .lang-btn:hover{background:#eceff1}
+  .lang-btn.active{opacity:1;filter:none}
+  h1{font-size:26px;margin:12px 0 4px}
+  p.tagline{color:#5f6368;margin-bottom:28px}
+  p{margin-bottom:14px}
+  .video-card{position:relative;display:block;border-radius:12px;overflow:hidden;margin:8px 0 22px;box-shadow:0 1px 3px rgba(0,0,0,.15)}
+  .video-thumb{width:100%;display:block;aspect-ratio:16/9;object-fit:cover;background:#000}
+  .play-btn{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:56px;height:56px;background:rgba(0,0,0,.65);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:20px;transition:background .15s,transform .15s}
+  .video-card:hover .play-btn{background:rgba(211,47,47,.92);transform:translate(-50%,-50%) scale(1.08)}
+  .video-caption{position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,rgba(0,0,0,.65));color:#fff;font-size:13px;font-weight:600;padding:26px 14px 10px}
+  .card{background:#fff;border:1px solid #dadce0;border-radius:12px;padding:20px 24px;margin-bottom:20px}
+  ul{margin:0 0 14px 20px}
+  a{color:#1a73e8;text-decoration:none}
+  a:hover{text-decoration:underline}
+  footer{color:#5f6368;font-size:13px;margin-top:32px}
+  footer p{margin-bottom:4px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top-row">
+    <img class="logo" src="icon128.png" alt="Task Easier">
+    <div class="top-actions">
+      <a class="install-btn-top" href="https://script.google.com/macros/s/AKfycby2Kx7TAddEgFJNbD2GUk5YYxoEDXe0Xjha2mGSa-Gdl4kz0xZQqPoTiQ_6VEPHwRN02g/exec?view=mobile" title="Instalar no celular">📲 <span data-i18n="install_cta">Instalar no celular</span></a>
+      <span class="ext-btn-top" title="Em breve na Chrome Web Store" data-i18n-title="ext_cta_title">🧩 <span data-i18n="ext_cta">Extensão (em breve)</span></span>
+      <a class="privacy-link-top" href="./privacidade.html" data-i18n="privacy_link">Política de Privacidade</a>
+      <a class="coffee-btn-top" href="https://buymeacoffee.com/hugofga" target="_blank" rel="noopener">☕ <span data-i18n="coffee_text_short">Apoie</span></a>
+      <div class="lang-switch">
+        <button type="button" class="lang-btn" data-lang="pt" title="Português" aria-label="Português">🇧🇷</button>
+        <button type="button" class="lang-btn" data-lang="en" title="English" aria-label="English">🇺🇸</button>
+      </div>
+    </div>
+  </div>
+
+  <h1>Task Easier</h1>
+  <p class="tagline" data-i18n="tagline">Gerencie suas tarefas do Google Tasks e eventos do Google Calendar em um só lugar.</p>
+
+  <p data-i18n="intro1">Se você gosta de tomar notas em um caderninho ou folhas para não esquecer de nada e vai ticando conforme conclui, você é como eu! Existem inúmeras ferramentas fantásticas mas complexas ou com muitos recursos, quando o que importa é anotar o tema e depois ticá-lo como concluído.</p>
+
+  <p data-i18n="intro2">As tarefas do Google ajudam nisso, mas é um tanto demorado inseri-las ou editá-las. Com essa extensão você faz isso rápido demais.</p>
+
+  <p data-i18n="intro3">Edite uma ou mais facilmente. Use e veja você mesmo!</p>
+
+  <a class="video-card" href="https://www.youtube.com/watch?v=2yGrlca9tC8" target="_blank" rel="noopener">
+    <img class="video-thumb" src="https://img.youtube.com/vi/2yGrlca9tC8/hqdefault.jpg" alt="Task Easier - vídeo de demonstração">
+    <span class="play-btn">▶</span>
+    <span class="video-caption" data-i18n="video_caption">Veja como funciona</span>
+  </a>
+
+  <div class="card">
+    <p data-i18n="card_intro">O Task Easier é uma extensão para Google Chrome que reúne suas tarefas e eventos numa única tabela editável, com:</p>
+    <ul>
+      <li data-i18n="feat1">Edição direta na tabela, sem popups</li>
+      <li data-i18n="feat2">Conversão rápida entre tarefa e evento</li>
+      <li data-i18n="feat3">Um popup de acesso rápido para adicionar itens e ver os pendentes do dia</li>
+      <li data-i18n="feat4">Contador de pendências no próprio ícone da extensão</li>
+      <li data-i18n="feat5">Suporte a Português e Inglês, tema claro e escuro</li>
+    </ul>
+    <p data-i18n="card_privacy_note">A extensão acessa apenas a sua própria conta Google (Tasks e Calendar) para exibir e gerenciar seus itens — nenhum dado é enviado a servidores de terceiros.</p>
+  </div>
+
+  <p><a href="./privacidade.html" data-i18n="privacy_link">Política de Privacidade</a></p>
+
+  <footer>
+    <p><span data-i18n="contact_label">Contato:</span> hugofga@gmail.com</p>
+    <p><span data-i18n="location_label">De Niterói - RJ / Brasil</span> · +55 (21) 98369-0327</p>
+    <p><span data-i18n="versions_label">Versões:</span> <span id="versions-line"></span></p>
+  </footer>
+</div>
+
+<div class="site-version" id="site-version"></div>
+
+<script>
+var SITE_VERSION = 'v14';
+// Números exibidos no rodapé — atualizar manualmente sempre que a extensão
+// (manifest.json → "version") ou o app mobile (app-mobile.js → APP_VERSION)
+// mudarem de versão.
+var EXT_VERSION = '1.2';
+var MOBILE_VERSION = 'v14';
+var I18N = {
+  pt: {
+    tagline: 'Gerencie suas tarefas do Google Tasks e eventos do Google Calendar em um só lugar.',
+    intro1: 'Se você gosta de tomar notas em um caderninho ou folhas para não esquecer de nada e vai ticando conforme conclui, você é como eu! Existem inúmeras ferramentas fantásticas mas complexas ou com muitos recursos, quando o que importa é anotar o tema e depois ticá-lo como concluído.',
+    intro2: 'As tarefas do Google ajudam nisso, mas é um tanto demorado inseri-las ou editá-las. Com essa extensão você faz isso rápido demais.',
+    intro3: 'Edite uma ou mais facilmente. Use e veja você mesmo!',
+    video_caption: 'Veja como funciona',
+    card_intro: 'O Task Easier é uma extensão para Google Chrome que reúne suas tarefas e eventos numa única tabela editável, com:',
+    feat1: 'Edição direta na tabela, sem popups',
+    feat2: 'Conversão rápida entre tarefa e evento',
+    feat3: 'Um popup de acesso rápido para adicionar itens e ver os pendentes do dia',
+    feat4: 'Contador de pendências no próprio ícone da extensão',
+    feat5: 'Suporte a Português e Inglês, tema claro e escuro',
+    card_privacy_note: 'A extensão acessa apenas a sua própria conta Google (Tasks e Calendar) para exibir e gerenciar seus itens — nenhum dado é enviado a servidores de terceiros.',
+    privacy_link: 'Política de Privacidade',
+    coffee_text_short: 'Apoie',
+    install_cta: 'Instalar no celular',
+    ext_cta: 'Extensão (em breve)',
+    ext_cta_title: 'Em breve na Chrome Web Store',
+    contact_label: 'Contato:',
+    location_label: 'De Niterói - RJ / Brasil',
+    versions_label: 'Versões:',
+    versions_line: 'Extensão v{ext} · App para celular {mobile}'
+  },
+  en: {
+    tagline: 'Manage your Google Tasks and Google Calendar events in one place.',
+    intro1: "If you like taking notes on a little notebook or scraps of paper so you don't forget anything, and check them off as you go, you're like me! There are countless fantastic tools out there, but they're complex or packed with features when all that really matters is jotting down the item and checking it off once it's done.",
+    intro2: "Google Tasks helps with that, but adding or editing tasks takes a while. With this extension you do it way faster.",
+    intro3: 'Edit one or several at once, easily. Try it and see for yourself!',
+    video_caption: 'See it in action',
+    card_intro: 'Task Easier is a Chrome extension that brings your tasks and events together in a single editable table, with:',
+    feat1: 'Direct in-table editing, no popups',
+    feat2: 'Quick conversion between task and event',
+    feat3: 'A quick-access popup to add items and see what\'s pending today',
+    feat4: "A pending-count badge right on the extension's icon",
+    feat5: 'Portuguese and English support, light and dark theme',
+    card_privacy_note: 'The extension only accesses your own Google account (Tasks and Calendar) to display and manage your items — no data is sent to third-party servers.',
+    privacy_link: 'Privacy Policy',
+    coffee_text_short: 'Support',
+    install_cta: 'Install on phone',
+    ext_cta: 'Extension (coming soon)',
+    ext_cta_title: 'Coming soon to the Chrome Web Store',
+    contact_label: 'Contact:',
+    location_label: 'From Niterói - RJ / Brazil',
+    versions_label: 'Versions:',
+    versions_line: 'Extension v{ext} · Phone app {mobile}'
+  }
+};
+
+var currentLang = 'pt';
+try { currentLang = localStorage.getItem('te-site-lang') || 'pt'; } catch (e) { /* ignore */ }
+
+function applyLang() {
+  var dict = I18N[currentLang] || I18N.pt;
+  document.querySelectorAll('[data-i18n]').forEach(function(el) {
+    var key = el.getAttribute('data-i18n');
+    if (dict[key] !== undefined) el.textContent = dict[key];
+  });
+  document.querySelectorAll('[data-i18n-title]').forEach(function(el) {
+    var key = el.getAttribute('data-i18n-title');
+    if (dict[key] !== undefined) el.setAttribute('title', dict[key]);
+  });
+  var versionsEl = document.getElementById('versions-line');
+  if (versionsEl) {
+    versionsEl.textContent = dict.versions_line
+      .replace('{ext}', EXT_VERSION)
+      .replace('{mobile}', MOBILE_VERSION);
+  }
+  document.documentElement.lang = currentLang === 'en' ? 'en' : 'pt-BR';
+  document.querySelectorAll('.lang-btn').forEach(function(b) {
+    b.classList.toggle('active', b.getAttribute('data-lang') === currentLang);
+  });
+}
+
+document.querySelectorAll('.lang-btn').forEach(function(b) {
+  b.addEventListener('click', function() {
+    currentLang = b.getAttribute('data-lang');
+    try { localStorage.setItem('te-site-lang', currentLang); } catch (e) { /* ignore */ }
+    applyLang();
+  });
+});
+
+applyLang();
+
+var siteVersionEl = document.getElementById('site-version');
+if (siteVersionEl) siteVersionEl.textContent = SITE_VERSION;
+</script>
+</body>
+</html>
