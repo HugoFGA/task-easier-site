@@ -1,0 +1,1357 @@
+<!DOCTYPE html>
+<!-- Arquivo: index.html | Versão: 1 (Task Easier — PWA em taskeasier.com.br/app/, login Google no navegador; gerado a partir do MobileApp.html v13 + gis-shim.js v4) -->
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#F4511E">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Task Easier">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="icon" type="image/png" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="manifest" href="manifest.webmanifest">
+<title>Task Easier</title>
+<style>
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  :root{
+    --blue:#1a73e8;--blue-dk:#1557b0;--blue-lt:#e8f0fe;
+    --red:#d93025;--green:#188038;--orange:#F4511E;
+    --text:#202124;--sec:#5f6368;--border:#dadce0;
+    --bg:#f8f9fa;--white:#fff;
+    --focus-ring:rgba(26,115,232,.15);
+    --overlay-bg:rgba(255,255,255,.75);
+  }
+  :root[data-theme="dark"]{
+    --blue:#8ab4f8;--blue-dk:#8ab4f8;--blue-lt:rgba(138,180,248,.18);
+    --red:#f28b82;--green:#81c995;--orange:#ff7043;
+    --text:#e8eaed;--sec:#9aa0a6;--border:#3c4043;
+    --bg:#161719;--white:#242528;
+    --focus-ring:rgba(138,180,248,.25);
+    --overlay-bg:rgba(36,37,40,.85);
+  }
+  /* Depois de corrigir o viewport (Code.gs agora usa addMetaTag), a página
+     inteira rola do jeito mais simples e confiável que existe: rolagem
+     NATIVA do navegador (a mesma usada em qualquer site comum), em vez de
+     travar tudo num "app" de altura fixa com rolagem simulada por
+     JavaScript numa lista interna — essa abordagem se mostrou frágil
+     dentro do iframe do Apps Script. O topo (logo/formulário) e o rodapé
+     (busca) ficam "grudados" na tela com position:sticky, que não precisa
+     de nenhum truque de altura: ele só flutua durante a rolagem normal. */
+  html,body{font-family:-apple-system,Roboto,Arial,sans-serif;color:var(--text);background:var(--bg);overscroll-behavior-y:none}
+  body{-webkit-tap-highlight-color:transparent}
+
+  .wrap{max-width:480px;width:100%;margin:0 auto;padding:0 16px;min-height:100vh}
+  .fixed-top{position:sticky;top:0;z-index:10;background:var(--bg);padding-top:20px}
+  .top-bar{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+  .logo{width:36px;height:36px;border-radius:9px;flex-shrink:0}
+  .top-bar h1{font-size:18px;white-space:nowrap;flex:1}
+  .top-actions{display:flex;align-items:center;gap:8px}
+  .coffee-btn-top{display:inline-flex;align-items:center;gap:3px;background:#FFDD00;color:#1c1c1c;font-weight:600;font-size:11px;padding:5px 9px;border-radius:14px;text-decoration:none;white-space:nowrap}
+  .lang-switch{display:flex;gap:2px}
+  .lang-btn{background:transparent;border:none;cursor:pointer;font-size:20px;line-height:1;padding:3px;border-radius:4px;opacity:.4;filter:grayscale(60%)}
+  .lang-btn.active{opacity:1;filter:none}
+  .icon-btn{background:transparent;border:none;cursor:pointer;font-size:18px;line-height:1;padding:3px 5px;border-radius:4px;color:var(--text)}
+  .icon-btn:active{background:var(--border)}
+
+  .data-menu-wrap{position:relative}
+  .data-menu{position:absolute;top:calc(100% + 6px);right:0;background:var(--white);border:1px solid var(--border);border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.2);padding:6px;display:flex;flex-direction:column;min-width:170px;z-index:30}
+  .data-menu-item{background:transparent;border:none;text-align:left;padding:9px 10px;font-size:13px;font-weight:600;cursor:pointer;border-radius:7px;color:var(--text);display:flex;align-items:center;gap:7px;white-space:nowrap}
+  .data-menu-item:active{background:var(--border)}
+
+  .hidden{display:none!important}
+
+  .balloon{position:fixed;z-index:100;color:#fff;font-weight:700;font-size:15px;padding:12px 22px;border-radius:24px;box-shadow:0 4px 14px rgba(0,0,0,.3);max-width:78vw;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;top:12px}
+  #qa-toast{left:50%;transform:translateX(-50%)}
+  #qa-toast.ok{background:var(--blue)}
+  #qa-toast.err{background:var(--red)}
+  #undo-balloon{right:10px;background:var(--green);cursor:pointer}
+
+  /* ── FORM (fica dentro da parte fixa/sticky) ── */
+  .quick-form{display:flex;flex-direction:column;gap:8px;margin-bottom:8px}
+  .ctrl{padding:11px 12px;border:1px solid var(--border);border-radius:10px;font-size:15px;font-family:inherit;color:var(--text);background:var(--white);outline:none;width:100%}
+  .ctrl:focus{border-color:var(--blue);box-shadow:0 0 0 3px var(--focus-ring)}
+  .row{display:flex;gap:8px;align-items:center}
+  .row .ctrl{flex:1}
+  .ctrl-auto{width:auto;flex:0 0 auto;min-width:0}
+  .type-toggle{display:flex;align-items:center;gap:5px;cursor:pointer;user-select:none;white-space:nowrap}
+  .type-toggle-icon{opacity:.5;font-size:13px}
+  .color-block{width:30px;height:30px;flex-shrink:0;border-radius:8px;cursor:pointer;border:1px solid var(--border)}
+  .color-popover{position:fixed;z-index:200;background:var(--white);border:1px solid var(--border);border-radius:14px;box-shadow:0 8px 24px rgba(0,0,0,.2);padding:10px;display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+  .color-popover .swatch{width:34px;height:34px;border-radius:50%;cursor:pointer;border:2px solid transparent;display:flex;align-items:center;justify-content:center}
+  .color-popover .swatch.selected{border-color:var(--text)}
+  .color-popover .swatch svg{width:16px;height:16px;color:#fff;filter:drop-shadow(0 0 1px rgba(0,0,0,.6))}
+
+  #qa-notes{font-style:italic;color:var(--sec)}
+  #qa-notes::placeholder{font-style:italic;color:var(--sec);opacity:.8}
+
+  .qa-add-btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;background:var(--orange);color:#fff;border:none;border-radius:12px;padding:12px;font-size:15px;font-weight:600;cursor:pointer;margin-top:2px}
+  .qa-add-btn img{width:20px;height:20px;border-radius:5px;flex-shrink:0}
+  .qa-add-btn:active{opacity:.85}
+  .qa-add-btn:disabled{opacity:.6;cursor:default}
+
+  /* ── LISTA (única parte que rola; topo e rodapé ficam sempre visíveis) ── */
+  .tasks-view{display:flex;flex-direction:column;gap:8px;padding-bottom:12px}
+  .tasks-list{display:flex;flex-direction:column;background:var(--white);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+  .task-item{border-bottom:1px solid var(--border)}
+  .task-item:last-child{border-bottom:none}
+  .task-row{display:flex;align-items:center;gap:8px;padding:10px 12px;font-size:14px}
+  .task-color-bar{width:5px;align-self:stretch;border-radius:3px;flex-shrink:0;background:var(--border)}
+  .task-row input[type=checkbox]{width:19px;height:19px;flex-shrink:0;accent-color:var(--green)}
+  .task-row .task-col-notes{flex:1;min-width:0;color:var(--text);word-break:break-word;cursor:pointer}
+  .task-row.done .task-col-notes{text-decoration:line-through;color:var(--sec)}
+  .task-expand-icon{color:var(--sec);font-size:12px;flex-shrink:0;padding:0 2px}
+  .task-del-btn{background:transparent;border:none;cursor:pointer;color:var(--sec);flex-shrink:0;padding:6px;border-radius:6px;display:flex;align-items:center}
+  .task-del-btn:active{background:var(--bg)}
+  #tasks-empty,#tasks-loading{font-size:14px;color:var(--sec);text-align:center;padding:24px 0}
+
+  .task-details{display:flex;flex-direction:column;gap:8px;padding:4px 12px 14px}
+  .detail-row{display:flex;gap:8px}
+  .detail-row .ctrl{font-size:14px;padding:9px 10px}
+  .detail-notes{font-style:italic;color:var(--sec);font-family:inherit;resize:vertical;min-height:88px;max-height:45vh;overflow-y:auto;line-height:1.4;-webkit-overflow-scrolling:touch}
+  .detail-btn{flex:1;padding:9px;border-radius:8px;border:none;font-size:13px;font-weight:600;cursor:pointer}
+  .detail-btn.save-btn{background:var(--orange);color:#fff}
+  .detail-btn.copy-btn{background:var(--border);color:var(--text)}
+  .detail-btn:disabled{opacity:.6}
+
+  /* ── RODAPÉ FIXO: caixa de busca ── */
+  .fixed-bottom{position:sticky;bottom:0;z-index:10;background:var(--bg);padding:10px 0 calc(10px + env(safe-area-inset-bottom));margin-top:4px}
+  #search-input{font-style:normal}
+
+  .app-version{position:fixed;right:8px;bottom:6px;font-size:10px;color:var(--sec);opacity:.55;pointer-events:none;z-index:40;background:var(--overlay-bg);padding:1px 6px;border-radius:6px}
+  /* ── PWA: instalar + login ── */
+  .install-btn{background:var(--orange);color:#fff;border:none;cursor:pointer;font-size:15px;line-height:1;padding:5px 7px;border-radius:14px}
+  .install-btn:active{opacity:.85}
+  .login-screen{min-height:70vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:18px;padding:24px 8px}
+  .login-screen p{color:var(--sec);font-size:15px;max-width:320px}
+  .signin-btn{display:inline-flex;align-items:center;gap:10px;background:var(--white);border:1px solid var(--border);border-radius:24px;padding:12px 22px;font-size:15px;font-weight:600;color:var(--text);cursor:pointer;box-shadow:0 1px 3px rgba(0,0,0,.12)}
+  .signin-btn:active{background:var(--bg)}
+  .login-error{color:var(--red);font-size:13px;max-width:320px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="fixed-top">
+    <div class="top-bar">
+      <img class="logo" src="data:image/png;base64,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" alt="Task Easier">
+      <h1>Task Easier</h1>
+      <div class="top-actions">
+        <button type="button" id="install-btn" class="install-btn hidden" title="Instalar no celular" aria-label="Instalar no celular">📲</button>
+        <button type="button" id="theme-btn" class="icon-btn" title="Alternar tema" aria-label="Alternar tema">🌙</button>
+        <button type="button" id="peek-btn" class="icon-btn hidden" title="Ver tudo" aria-label="Ver tudo">😊</button>
+        <div class="data-menu-wrap">
+          <button type="button" id="data-menu-btn" class="icon-btn hidden" title="Exportar/Importar" aria-label="Exportar/Importar">🗂️</button>
+          <div id="data-menu" class="data-menu hidden">
+            <button type="button" id="export-btn" class="data-menu-item">📤 <span data-i18n="export_btn">Exportar JSON</span></button>
+            <button type="button" id="import-btn" class="data-menu-item">📥 <span data-i18n="import_btn">Importar JSON</span></button>
+          </div>
+        </div>
+        <a class="coffee-btn-top" href="https://buymeacoffee.com/hugofga" target="_blank" rel="noopener">☕ <span data-i18n="coffee_text_short">Apoie</span></a>
+        <div class="lang-switch">
+          <button type="button" class="lang-btn" data-lang="pt" title="Português" aria-label="Português">🇧🇷</button>
+          <button type="button" class="lang-btn" data-lang="en" title="English" aria-label="English">🇺🇸</button>
+          <button type="button" class="lang-btn" data-lang="zh" title="中文" aria-label="中文">🇨🇳</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Formulário: fica preso no topo junto com a barra acima -->
+    <div id="quick-form-wrap" class="hidden">
+      <form id="quick-form" class="quick-form">
+        <input type="text" id="qa-title" class="ctrl" placeholder="Título..." autocomplete="off" required data-i18n-placeholder="ph_title">
+
+        <div class="row">
+          <button type="button" id="qa-type-toggle" class="ctrl ctrl-auto type-toggle" aria-label="Tipo">
+            <span id="qa-type-label">Tarefa</span><span class="type-toggle-icon">⇄</span>
+          </button>
+          <input type="date" id="qa-date" class="ctrl ctrl-auto">
+          <div id="qa-color-block" class="color-block hidden" title="Cor do evento" data-i18n-title="label_event_color"></div>
+        </div>
+
+        <input type="text" id="qa-notes" class="ctrl" placeholder="Notas (opcional)" autocomplete="off" data-i18n-placeholder="notes_placeholder">
+
+        <button type="submit" id="qa-add-btn" class="qa-add-btn" data-i18n-title="btn_add_title" aria-label="Adicionar">
+          <img src="data:image/png;base64,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" alt="">
+          <span data-i18n="btn_add_title">Adicionar</span>
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <div id="login-screen" class="login-screen">
+    <p data-i18n="login_intro">Entre com sua conta Google para gerenciar suas tarefas do Google Tasks e eventos do Google Calendar.</p>
+    <button type="button" id="signin-btn" class="signin-btn">
+      <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.7 29.3 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.9 1.2 8 3.1l6-6C34.5 5.9 29.6 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.7-.4-3.5z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.6 15.9 18.9 13 24 13c3.1 0 5.9 1.2 8 3.1l6-6C34.5 5.9 29.6 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.5 0 10.4-1.9 14.2-5.1l-6.6-5.4C29.6 35.4 26.9 36 24 36c-5.3 0-9.7-3.3-11.3-8l-6.6 5.1C9.5 39.6 16.2 44 24 44z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.1-4 5.5l6.6 5.4C41.9 35.7 44 30.3 44 24c0-1.3-.1-2.7-.4-3.5z"/></svg>
+      <span data-i18n="signin_btn">Entrar com o Google</span>
+    </button>
+    <p id="login-error" class="login-error hidden"></p>
+  </div>
+
+    <!-- Lista: única parte que rola (o topo/rodapé ficam fixos) -->
+  <div id="tasks-view" class="tasks-view hidden">
+    <p id="tasks-loading" data-i18n="tasks_loading">Carregando tarefas…</p>
+    <p id="tasks-empty" class="hidden" data-i18n="tasks_empty">Nenhuma tarefa ou evento</p>
+    <div id="tasks-list" class="tasks-list hidden"></div>
+  </div>
+
+  <!-- Busca: fica presa no rodapé -->
+  <div id="fixed-bottom" class="fixed-bottom hidden">
+    <input type="search" id="search-input" class="ctrl" placeholder="🔍 Buscar tarefas e eventos..." autocomplete="off" data-i18n-placeholder="search_placeholder">
+  </div>
+</div>
+
+<input type="file" id="import-file-input" accept="application/json,.json" class="hidden">
+
+<div id="qa-toast" class="balloon hidden"></div>
+<div id="undo-balloon" class="balloon hidden"></div>
+<div class="app-version" id="app-version"></div>
+
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<script src="gis-shim.js"></script>
+<script>
+// Exibido no canto inferior direito da página.
+var APP_VERSION = 'pwa-1';
+
+// ── TEMA CLARO/ESCURO ────────────────────────────────────────────────
+var THEME_KEY = 'te-site-theme';
+var currentTheme = 'light';
+try { currentTheme = localStorage.getItem(THEME_KEY) || 'light'; } catch (e) { /* ignore */ }
+
+function applyTheme(theme) {
+  document.documentElement.setAttribute('data-theme', theme === 'dark' ? 'dark' : 'light');
+  var btn = document.getElementById('theme-btn');
+  if (btn) btn.textContent = theme === 'dark' ? '☀️' : '🌙';
+  var meta = document.querySelector('meta[name="theme-color"]');
+  if (meta) meta.setAttribute('content', theme === 'dark' ? '#161719' : '#F4511E');
+}
+applyTheme(currentTheme);
+
+(function initThemeSwitch() {
+  var btn = document.getElementById('theme-btn');
+  if (!btn) return;
+  btn.addEventListener('click', function() {
+    currentTheme = currentTheme === 'dark' ? 'light' : 'dark';
+    try { localStorage.setItem(THEME_KEY, currentTheme); } catch (e) { /* ignore */ }
+    applyTheme(currentTheme);
+  });
+})();
+
+// ── BLOQUEIO DE ROLAGEM COM O TECLADO ABERTO ─────────────────────────
+// Voltamos a usar rolagem normal da página (em vez de uma lista interna
+// com altura travada), então o mesmo cuidado da versão fora da extensão
+// se aplica aqui: no celular, tocar num campo de texto abre o teclado e o
+// navegador tenta rolar a página pra mostrar o campo — isso destrava a
+// posição do formulário fixo no topo. A solução é travar o <body>
+// (position:fixed) assim que um campo ganha foco, e devolver a rolagem
+// normal quando o foco sai do campo.
+(function preventScrollWhileTyping() {
+  var savedScrollY = 0;
+  var locked = false;
+
+  function isTextField(el) {
+    if (!el) return false;
+    var tag = el.tagName;
+    return tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT';
+  }
+
+  function lockScroll() {
+    if (locked) return;
+    locked = true;
+    savedScrollY = window.scrollY || document.documentElement.scrollTop || 0;
+    document.body.style.position = 'fixed';
+    document.body.style.top = (-savedScrollY) + 'px';
+    document.body.style.left = '0';
+    document.body.style.right = '0';
+    document.body.style.width = '100%';
+  }
+
+  function unlockScroll() {
+    if (!locked) return;
+    locked = false;
+    document.body.style.position = '';
+    document.body.style.top = '';
+    document.body.style.left = '';
+    document.body.style.right = '';
+    document.body.style.width = '';
+    window.scrollTo(0, savedScrollY);
+  }
+
+  document.addEventListener('focusin', function(e) {
+    if (isTextField(e.target)) lockScroll();
+  });
+  document.addEventListener('focusout', function(e) {
+    setTimeout(function() {
+      if (!isTextField(document.activeElement)) unlockScroll();
+    }, 50);
+  });
+})();
+
+// ── BLOQUEIO DO "PUXAR PRA ATUALIZAR" (pull-to-refresh) ──────────────
+// overscroll-behavior-y:none no CSS (html,body) já deveria bastar, mas o
+// Web App do Apps Script entrega esta página DENTRO de um iframe do
+// próprio Google (script.google.com), e é o documento de fora — que a
+// gente não controla e não tem como colocar CSS — quem decide se mostra
+// o gesto nativo de "puxar pra atualizar" do Chrome no Android. Por isso
+// o CSS sozinho não segura 100% dos casos. Reforço em JS: só quando a
+// página já está no topo (scrollTop 0) e o dedo continua arrastando pra
+// baixo, cancela o evento de toque — isso impede o arrasto de "vazar"
+// pro documento de fora e disparar o recarregamento. Fora dessa condição
+// exata, a rolagem normal (inclusive pra baixo, dentro do conteúdo)
+// continua 100% intacta.
+(function preventPullToRefresh() {
+  var startY = 0;
+  var tracking = false;
+
+  document.addEventListener('touchstart', function(e) {
+    if (!e.touches || e.touches.length !== 1) { tracking = false; return; }
+    startY = e.touches[0].clientY;
+    tracking = true;
+  }, { passive: true });
+
+  document.addEventListener('touchmove', function(e) {
+    if (!tracking || !e.touches || e.touches.length !== 1) return;
+    var scroller = document.scrollingElement || document.documentElement;
+    var draggingDown = e.touches[0].clientY - startY > 0;
+    if (scroller.scrollTop <= 0 && draggingDown) {
+      e.preventDefault();
+    }
+  }, { passive: false });
+
+  document.addEventListener('touchend', function() { tracking = false; }, { passive: true });
+})();
+
+// ── I18N (PT-BR / EN) ────────────────────────────────────────
+const I18N = {
+  pt: {
+    login_intro: 'Entre com sua conta Google para gerenciar suas tarefas do Google Tasks e eventos do Google Calendar.',
+    signin_btn: 'Entrar com o Google',
+    ph_title: 'Título...',
+    type_task: 'Tarefa',
+    type_event: 'Evento',
+    label_event_color: 'Cor do evento',
+    notes_placeholder: 'Notas (opcional)',
+    color_tooltip_event: 'Cor do evento ({name})',
+    color_orange: 'Laranja', color_blue: 'Azul', color_green: 'Verde', color_red: 'Vermelho',
+    color_yellow: 'Amarelo', color_purple: 'Roxo', color_gray: 'Cinza', color_cyan: 'Ciano',
+    error_loading_prefix: 'Erro ao carregar: ',
+    error_prefix: 'Erro: ',
+    toast_event_created: 'Evento criado!',
+    toast_task_created: 'Tarefa criada!',
+    toast_no_list_found: 'Nenhuma lista de tarefas encontrada',
+    tasks_loading: 'Carregando tarefas…',
+    tasks_empty: 'Nenhuma tarefa ou evento',
+    tasks_empty_search: 'Nenhum resultado para essa busca',
+    search_placeholder: '🔍 Buscar tarefas e eventos...',
+    delete_title: 'Excluir',
+    toast_removed_undo: 'Removido. Toque para desfazer.',
+    toast_removed_undo_n: '{n} removidos. Toque para desfazer.',
+    btn_add_title: 'Adicionar',
+    btn_save: 'Salvar',
+    btn_copy: 'Copiar',
+    toast_saved: 'Salvo!',
+    toast_copied: 'Copiado!',
+    toast_copy_failed: 'Não foi possível copiar',
+    title_peek_show_all: 'Ver tudo (incluindo concluídos)',
+    title_peek_show_pending: 'Ver só pendentes',
+    coffee_text_short: 'Apoie',
+    export_btn: 'Exportar JSON',
+    import_btn: 'Importar JSON',
+    toast_export_ok: 'Backup exportado!',
+    toast_importing: 'Importando…',
+    toast_import_invalid: 'Arquivo inválido',
+    toast_import_done: 'Importação concluída: {ok} criados, {fail} com erro'
+  },
+  en: {
+    login_intro: 'Sign in with your Google account to manage your Google Tasks and Google Calendar events.',
+    signin_btn: 'Sign in with Google',
+    ph_title: 'Title...',
+    type_task: 'Task',
+    type_event: 'Event',
+    label_event_color: 'Event color',
+    notes_placeholder: 'Notes (optional)',
+    color_tooltip_event: 'Event color ({name})',
+    color_orange: 'Orange', color_blue: 'Blue', color_green: 'Green', color_red: 'Red',
+    color_yellow: 'Yellow', color_purple: 'Purple', color_gray: 'Gray', color_cyan: 'Cyan',
+    error_loading_prefix: 'Error loading: ',
+    error_prefix: 'Error: ',
+    toast_event_created: 'Event created!',
+    toast_task_created: 'Task created!',
+    toast_no_list_found: 'No task list found',
+    tasks_loading: 'Loading tasks…',
+    tasks_empty: 'No tasks or events',
+    tasks_empty_search: 'No results for this search',
+    search_placeholder: '🔍 Search tasks and events...',
+    delete_title: 'Delete',
+    toast_removed_undo: 'Removed. Tap to undo.',
+    toast_removed_undo_n: '{n} removed. Tap to undo.',
+    btn_add_title: 'Add',
+    btn_save: 'Save',
+    btn_copy: 'Copy',
+    toast_saved: 'Saved!',
+    toast_copied: 'Copied!',
+    toast_copy_failed: 'Could not copy',
+    title_peek_show_all: 'Show all (including completed)',
+    title_peek_show_pending: 'Show only pending',
+    coffee_text_short: 'Support',
+    export_btn: 'Export JSON',
+    import_btn: 'Import JSON',
+    toast_export_ok: 'Backup exported!',
+    toast_importing: 'Importing…',
+    toast_import_invalid: 'Invalid file',
+    toast_import_done: 'Import finished: {ok} created, {fail} failed'
+  },
+  zh: {
+    login_intro: "使用您的 Google 账号登录，管理您的 Google 任务和 Google 日历事件。",
+    signin_btn: "使用 Google 登录",
+    ph_title: "标题...",
+    type_task: "任务",
+    type_event: "事件",
+    label_event_color: "事件颜色",
+    notes_placeholder: "备注（可选）",
+    color_tooltip_event: "事件颜色（{name}）",
+    color_orange: "橙色",
+    color_blue: "蓝色",
+    color_green: "绿色",
+    color_red: "红色",
+    color_yellow: "黄色",
+    color_purple: "紫色",
+    color_gray: "灰色",
+    color_cyan: "青色",
+    error_loading_prefix: "加载出错：",
+    error_prefix: "错误：",
+    toast_event_created: "事件已创建！",
+    toast_task_created: "任务已创建！",
+    toast_no_list_found: "未找到任务列表",
+    tasks_loading: "正在加载任务…",
+    tasks_empty: "没有任务或事件",
+    tasks_empty_search: "没有符合此搜索的结果",
+    search_placeholder: "🔍 搜索任务和事件...",
+    delete_title: "删除",
+    toast_removed_undo: "已移除。点按可撤销。",
+    toast_removed_undo_n: "已移除 {n} 项。点按可撤销。",
+    btn_add_title: "添加",
+    btn_save: "保存",
+    btn_copy: "复制",
+    toast_saved: "已保存！",
+    toast_copied: "已复制！",
+    toast_copy_failed: "无法复制",
+    title_peek_show_all: "显示全部（含已完成）",
+    title_peek_show_pending: "仅显示待办",
+    coffee_text_short: "支持",
+    export_btn: "导出 JSON",
+    import_btn: "导入 JSON",
+    toast_export_ok: "备份已导出！",
+    toast_importing: "正在导入…",
+    toast_import_invalid: "文件无效",
+    toast_import_done: "导入完成：已创建 {ok} 个，失败 {fail} 个"
+  }
+};
+
+let currentLang = 'pt';
+try { currentLang = localStorage.getItem('te-site-lang') || 'pt'; } catch (e) { /* ignore */ }
+
+function T(key) {
+  var dict = I18N[currentLang] || I18N.pt;
+  return (dict[key] !== undefined) ? dict[key] : (I18N.pt[key] !== undefined ? I18N.pt[key] : key);
+}
+
+function tf(key, params) {
+  var str = T(key);
+  if (params) {
+    Object.keys(params).forEach(function(k) {
+      str = str.split('{' + k + '}').join(params[k]);
+    });
+  }
+  return str;
+}
+
+var COLOR_NAME_KEYS = { '6': 'color_orange', '9': 'color_blue', '10': 'color_green', '11': 'color_red', '5': 'color_yellow', '3': 'color_purple', '8': 'color_gray', '7': 'color_cyan' };
+function colorName(id) {
+  var key = COLOR_NAME_KEYS[id];
+  return key ? T(key) : '';
+}
+
+var currentType = '__task__';
+function updateTypeToggle() {
+  var label = document.getElementById('qa-type-label');
+  if (!label) return;
+  label.textContent = T(currentType === '__calendar__' ? 'type_event' : 'type_task');
+  var colorBlock = document.getElementById('qa-color-block');
+  if (colorBlock) colorBlock.classList.toggle('hidden', currentType !== '__calendar__');
+}
+
+function applyI18n() {
+  document.querySelectorAll('[data-i18n]').forEach(function(el) {
+    el.textContent = T(el.dataset.i18n);
+  });
+  document.querySelectorAll('[data-i18n-placeholder]').forEach(function(el) {
+    el.placeholder = T(el.dataset.i18nPlaceholder);
+  });
+  document.querySelectorAll('[data-i18n-title]').forEach(function(el) {
+    el.title = T(el.dataset.i18nTitle);
+  });
+  document.querySelectorAll('.lang-btn').forEach(function(b) {
+    b.classList.toggle('active', b.dataset.lang === currentLang);
+  });
+  document.documentElement.lang = ({en:'en',zh:'zh-CN'})[currentLang] || 'pt-BR';
+  updateTypeToggle();
+  updatePeekButtonTitle();
+}
+
+function setLang(lang) {
+  if (lang !== 'pt' && lang !== 'en' && lang !== 'zh') return;
+  currentLang = lang;
+  try { localStorage.setItem('te-site-lang', lang); } catch (e) { /* ignore */ }
+  applyI18n();
+  if (typeof colorVal !== 'undefined') {
+    var block = document.getElementById('qa-color-block');
+    if (block && typeof updateColorBlock === 'function') updateColorBlock(block);
+  }
+}
+
+function initLangSwitch() {
+  document.querySelectorAll('.lang-btn').forEach(function(b) {
+    b.addEventListener('click', function() { setLang(b.dataset.lang); });
+  });
+  applyI18n();
+}
+initLangSwitch();
+
+(function showVersion() {
+  var el = document.getElementById('app-version');
+  if (el) el.textContent = APP_VERSION;
+})();
+
+// ── EMOJI "VER TUDO" (😊 pendentes / 😲 tudo, incluindo concluídos) ───
+var showAllMode = false;
+function updatePeekButtonTitle() {
+  var btn = document.getElementById('peek-btn');
+  if (!btn) return;
+  var label = showAllMode ? T('title_peek_show_pending') : T('title_peek_show_all');
+  btn.title = label;
+  btn.setAttribute('aria-label', label);
+}
+(function setupPeekButton() {
+  var btn = document.getElementById('peek-btn');
+  if (!btn) return;
+  btn.addEventListener('click', function() {
+    showAllMode = !showAllMode;
+    btn.textContent = showAllMode ? '😲' : '😊';
+    updatePeekButtonTitle();
+    loadTasksView();
+  });
+})();
+
+// ── MENU EXPORTAR / IMPORTAR ────────────────────────────────
+(function setupDataMenu() {
+  var btn = document.getElementById('data-menu-btn');
+  var menu = document.getElementById('data-menu');
+  var fileInput = document.getElementById('import-file-input');
+  if (!btn || !menu || !fileInput) return;
+
+  function closeMenu() {
+    menu.classList.add('hidden');
+    document.removeEventListener('click', onOutside, true);
+    document.removeEventListener('keydown', onEsc, true);
+  }
+  function onOutside(e) {
+    if (!menu.contains(e.target) && e.target !== btn) closeMenu();
+  }
+  function onEsc(e) { if (e.key === 'Escape') closeMenu(); }
+
+  btn.addEventListener('click', function(e) {
+    e.stopPropagation();
+    if (menu.classList.contains('hidden')) {
+      menu.classList.remove('hidden');
+      document.addEventListener('click', onOutside, true);
+      document.addEventListener('keydown', onEsc, true);
+    } else {
+      closeMenu();
+    }
+  });
+
+  document.getElementById('export-btn').addEventListener('click', function() {
+    closeMenu();
+    exportAllData();
+  });
+
+  document.getElementById('import-btn').addEventListener('click', function() {
+    closeMenu();
+    fileInput.click();
+  });
+
+  fileInput.addEventListener('change', function(e) {
+    var file = e.target.files && e.target.files[0];
+    e.target.value = '';
+    if (!file) return;
+    var reader = new FileReader();
+    reader.onload = function() {
+      var data;
+      try { data = JSON.parse(reader.result); } catch (err) {
+        showToast(T('toast_import_invalid'), 'err');
+        return;
+      }
+      var items = Array.isArray(data) ? data : (data && Array.isArray(data.items) ? data.items : null);
+      if (!items) { showToast(T('toast_import_invalid'), 'err'); return; }
+      showToast(T('toast_importing'), 'ok');
+      importItemsFromJson(items).then(function(res) {
+        showToast(T('toast_import_done').replace('{ok}', res.okCount).replace('{fail}', res.failCount), res.failCount ? 'err' : 'ok');
+        loadTasksView();
+      });
+    };
+    reader.readAsText(file);
+  });
+})();
+
+// ── CORES DE EVENTO (mesmas da extensão) ────────────────────
+const EVENT_COLORS = [
+  { id: '6',  icon: '🟧', name: 'Laranja',  hex: '#F4511E' },
+  { id: '9',  icon: '🟦', name: 'Azul',     hex: '#3F51B5' },
+  { id: '10', icon: '🟩', name: 'Verde',    hex: '#0B8043' },
+  { id: '11', icon: '🟥', name: 'Vermelho', hex: '#D50000' },
+  { id: '5',  icon: '🟨', name: 'Amarelo',  hex: '#F6BF26' },
+  { id: '3',  icon: '🟪', name: 'Roxo',     hex: '#8E24AA' },
+  { id: '8',  icon: '⬜', name: 'Cinza',    hex: '#616161' },
+  { id: '7',  icon: '🔷', name: 'Ciano',    hex: '#039BE5' }
+];
+const DEFAULT_EVENT_COLOR = '6';
+
+// ── PALETA DE CORES (popover ao tocar no bloco de cor) ──────
+var colorPopoverEl = null;
+function closeColorPopover() {
+  if (colorPopoverEl) { colorPopoverEl.remove(); colorPopoverEl = null; }
+  document.removeEventListener('mousedown', onColorPopoverOutside, true);
+  document.removeEventListener('keydown', onColorPopoverEscape, true);
+}
+function onColorPopoverOutside(e) {
+  if (colorPopoverEl && !colorPopoverEl.contains(e.target)) closeColorPopover();
+}
+function onColorPopoverEscape(e) {
+  if (e.key === 'Escape') closeColorPopover();
+}
+function openColorPopover(anchorEl, currentId, onSelect) {
+  closeColorPopover();
+  var pop = document.createElement('div');
+  pop.className = 'color-popover';
+  EVENT_COLORS.forEach(function(c) {
+    var sw = document.createElement('div');
+    sw.className = 'swatch' + (c.id === (currentId || DEFAULT_EVENT_COLOR) ? ' selected' : '');
+    sw.style.background = c.hex;
+    sw.title = colorName(c.id);
+    if (c.id === (currentId || DEFAULT_EVENT_COLOR)) {
+      sw.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>';
+    }
+    sw.addEventListener('click', function(e) {
+      e.stopPropagation();
+      closeColorPopover();
+      onSelect(c.id);
+    });
+    pop.appendChild(sw);
+  });
+  document.body.appendChild(pop);
+  var rect = anchorEl.getBoundingClientRect();
+  var popRect = pop.getBoundingClientRect();
+  var left = Math.min(rect.left, window.innerWidth - popRect.width - 8);
+  var top = rect.bottom + 4;
+  if (top + popRect.height > window.innerHeight) top = Math.max(4, rect.top - popRect.height - 4);
+  pop.style.left = Math.max(4, left) + 'px';
+  pop.style.top = top + 'px';
+  colorPopoverEl = pop;
+  setTimeout(function() {
+    document.addEventListener('mousedown', onColorPopoverOutside, true);
+    document.addEventListener('keydown', onColorPopoverEscape, true);
+  }, 0);
+}
+
+(function setupInstallButton() {
+  var btn = document.getElementById('install-btn');
+  if (!btn) return;
+  var deferredPrompt = null;
+
+  var isStandalone = (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) || window.navigator.standalone;
+  if (isStandalone) return; // já instalado/rodando como app — não mostra o botão
+
+  window.addEventListener('beforeinstallprompt', function(e) {
+    e.preventDefault();
+    deferredPrompt = e;
+    btn.classList.remove('hidden');
+  });
+
+  window.addEventListener('appinstalled', function() {
+    deferredPrompt = null;
+    btn.classList.add('hidden');
+  });
+
+  btn.addEventListener('click', function() {
+    if (!deferredPrompt) return;
+    deferredPrompt.prompt();
+    deferredPrompt.userChoice.finally(function() {
+      deferredPrompt = null;
+      btn.classList.add('hidden');
+    });
+  });
+})();
+
+function pad2(n) { return (n < 10 ? '0' : '') + n; }
+
+// ── CHAMADAS À API (via gis-shim.js, com a mesma forma do google.script.run) ──
+function gsCall(fn, args) {
+  return new Promise(function(resolve, reject) {
+    var runner = google.script.run.withSuccessHandler(resolve).withFailureHandler(reject);
+    runner[fn].apply(runner, args);
+  });
+}
+
+function gsCallStream(fn, args, onProgress) {
+  return new Promise(function(resolve, reject) {
+    var runner = google.script.run.withSuccessHandler(resolve).withFailureHandler(reject);
+    runner[fn].apply(runner, args.concat([onProgress]));
+  });
+}
+
+// ── ESTADO ────────────────────────────────────────────────
+var taskLists   = [];
+var todayEvents = [];
+var colorVal    = DEFAULT_EVENT_COLOR;
+var todayISO, todayBR;
+
+function resolveMainListId() {
+  return taskLists.length ? taskLists[0].id : null;
+}
+
+function nextEventSlot(dateISO) {
+  var dayEvents = todayEvents.filter(function(t) {
+    return t.type === 'event' && t.due === dateISO && t.dueTime;
+  });
+  if (!dayEvents.length) return { h: 9, mi: 0 };
+  var maxMinutes = -1;
+  dayEvents.forEach(function(t) {
+    var p = t.dueTime.split(':').map(Number);
+    var mins = p[0] * 60 + p[1];
+    if (mins > maxMinutes) maxMinutes = mins;
+  });
+  var nextMinutes = maxMinutes + 15;
+  return { h: Math.floor(nextMinutes / 60) % 24, mi: nextMinutes % 60 };
+}
+
+// ── EXPORTAR / IMPORTAR (backup em JSON) ───────────────────────────────
+// Só tarefas e eventos PENDENTES entram no export/import.
+async function exportAllData() {
+  try {
+    var tasks = await gsCall('getTasks', [false]);
+    var events = await gsCall('getEvents', [false]);
+    var payload = {
+      app: 'Task Easier',
+      exportedAt: new Date().toISOString(),
+      version: 1,
+      items: sortItems((tasks || []).concat(events || [])).map(function(t) {
+        return {
+          type: t.type,
+          title: t.title,
+          due: t.due || '',
+          dueTime: t.dueTime || '',
+          notes: t.notes || '',
+          color: t.type === 'event' ? (t.color || DEFAULT_EVENT_COLOR) : undefined
+        };
+      })
+    };
+    var blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = 'task-easier-' + (todayISO || 'backup') + '.json';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    showToast(T('toast_export_ok'), 'ok');
+  } catch (e) {
+    showToast(T('error_prefix') + e.message, 'err');
+  }
+}
+
+async function importItemsFromJson(items) {
+  var listId = resolveMainListId();
+  var okCount = 0, failCount = 0;
+  var lastMinutesByDate = {};
+  for (var i = 0; i < items.length; i++) {
+    var it = items[i] || {};
+    try {
+      if (it.type === 'event') {
+        var dp = (it.due || '').split('-').map(Number);
+        var tp = (it.dueTime || '09:00').split(':').map(Number);
+        if (!dp[0] || !dp[1] || !dp[2]) throw new Error('data inválida');
+        var dateKey = it.due;
+        var minutes = (tp[0] || 9) * 60 + (tp[1] || 0);
+        if (lastMinutesByDate[dateKey] !== undefined && minutes <= lastMinutesByDate[dateKey]) {
+          minutes = lastMinutesByDate[dateKey] + 15;
+        }
+        lastMinutesByDate[dateKey] = minutes;
+        var hh = Math.floor(minutes / 60) % 24;
+        var mm = minutes % 60;
+        await gsCall('createEventQuick', [
+          it.title || '(sem título)', dp[0], dp[1], dp[2],
+          hh, mm, it.notes || '', it.color || DEFAULT_EVENT_COLOR
+        ]);
+      } else {
+        if (!listId) throw new Error('nenhuma lista de tarefas encontrada');
+        await gsCall('createTask', [listId, it.title || '(sem título)', it.due || null, it.notes || null]);
+      }
+      okCount++;
+    } catch (e) {
+      failCount++;
+    }
+  }
+  return { okCount: okCount, failCount: failCount };
+}
+
+// ── BALÃO DE CONFIRMAÇÃO (criação) ────────────────────────────────────
+var toastHideTimer = null;
+function showToast(msg, type) {
+  var el = document.getElementById('qa-toast');
+  el.textContent = msg;
+  el.className = 'balloon ' + (type || 'ok');
+  clearTimeout(toastHideTimer);
+  toastHideTimer = setTimeout(function() { el.classList.add('hidden'); }, 2200);
+}
+
+// ── BALÃO VERDE "DESFAZER" (canto superior direito) ───────────────────
+var undoBalloonTimer = null;
+function hideUndoBalloon() {
+  var el = document.getElementById('undo-balloon');
+  el.classList.add('hidden');
+  el.onclick = null;
+  clearTimeout(undoBalloonTimer);
+}
+function showUndoBalloon(msg, onClick) {
+  var el = document.getElementById('undo-balloon');
+  el.textContent = msg;
+  el.classList.remove('hidden');
+  el.onclick = onClick;
+  clearTimeout(undoBalloonTimer);
+  undoBalloonTimer = setTimeout(hideUndoBalloon, 5000);
+}
+
+var pendingUndos = [];
+
+function checkEmptyState() {
+  var listEl  = document.getElementById('tasks-list');
+  var emptyEl = document.getElementById('tasks-empty');
+  if (!listEl.children.length) {
+    emptyEl.classList.remove('hidden');
+    listEl.classList.add('hidden');
+  } else {
+    emptyEl.classList.add('hidden');
+    listEl.classList.remove('hidden');
+  }
+}
+
+function updateUndoBalloon() {
+  var n = pendingUndos.length;
+  if (!n) { hideUndoBalloon(); return; }
+  var msg = n === 1 ? T('toast_removed_undo') : tf('toast_removed_undo_n', { n: n });
+  showUndoBalloon(msg, function() {
+    pendingUndos.slice().forEach(function(entry) { entry.restore(); });
+    pendingUndos = [];
+    hideUndoBalloon();
+  });
+}
+
+function scheduleRowAction(row, listEl, doActionFn) {
+  var nextSibling = row.nextSibling;
+  var parent = row.parentNode || listEl;
+  row.remove();
+  checkEmptyState();
+
+  var entry = {
+    timer: null,
+    restore: function() {
+      clearTimeout(entry.timer);
+      if (nextSibling && nextSibling.parentNode === parent) parent.insertBefore(row, nextSibling);
+      else parent.appendChild(row);
+      checkEmptyState();
+      var idx = pendingUndos.indexOf(entry);
+      if (idx > -1) pendingUndos.splice(idx, 1);
+    }
+  };
+  entry.timer = setTimeout(function() {
+    var idx = pendingUndos.indexOf(entry);
+    if (idx > -1) pendingUndos.splice(idx, 1);
+    doActionFn().catch(function(e) { showToast(T('error_prefix') + e.message, 'err'); });
+    if (!pendingUndos.length) hideUndoBalloon();
+  }, 5000);
+
+  pendingUndos.push(entry);
+  updateUndoBalloon();
+}
+
+function buildTaskDetails(t, isEvent, onSaved) {
+  var wrap = document.createElement('div');
+  wrap.className = 'task-details hidden';
+
+  var titleInput = document.createElement('input');
+  titleInput.type = 'text';
+  titleInput.className = 'ctrl';
+  titleInput.value = t.title || '';
+
+  var fieldsRow = document.createElement('div');
+  fieldsRow.className = 'detail-row';
+
+  var dateInput = document.createElement('input');
+  dateInput.type = 'date';
+  dateInput.className = 'ctrl ctrl-auto';
+  dateInput.value = t.due || '';
+  fieldsRow.appendChild(dateInput);
+
+  var timeInput = null;
+  var colorBlockEdit = null;
+  var editColorVal = t.color || DEFAULT_EVENT_COLOR;
+
+  if (isEvent) {
+    timeInput = document.createElement('input');
+    timeInput.type = 'time';
+    timeInput.className = 'ctrl ctrl-auto';
+    timeInput.value = t.dueTime || '';
+    fieldsRow.appendChild(timeInput);
+
+    colorBlockEdit = document.createElement('div');
+    colorBlockEdit.className = 'color-block';
+    (function paintColorBlock() {
+      var c = EVENT_COLORS.find(function(c) { return c.id === editColorVal; }) || {};
+      colorBlockEdit.style.background = c.hex || '#F4511E';
+    })();
+    colorBlockEdit.addEventListener('click', function(e) {
+      e.stopPropagation();
+      openColorPopover(colorBlockEdit, editColorVal, function(newColor) {
+        editColorVal = newColor;
+        var c = EVENT_COLORS.find(function(c) { return c.id === editColorVal; }) || {};
+        colorBlockEdit.style.background = c.hex || '#F4511E';
+      });
+    });
+    fieldsRow.appendChild(colorBlockEdit);
+  }
+
+  var notesInput = document.createElement('textarea');
+  notesInput.className = 'ctrl detail-notes';
+  notesInput.rows = 4;
+  notesInput.value = t.notes || '';
+
+  var btnRow = document.createElement('div');
+  btnRow.className = 'detail-row';
+
+  var saveBtn = document.createElement('button');
+  saveBtn.type = 'button';
+  saveBtn.className = 'detail-btn save-btn';
+  saveBtn.textContent = '💾 ' + T('btn_save');
+
+  var copyBtn = document.createElement('button');
+  copyBtn.type = 'button';
+  copyBtn.className = 'detail-btn copy-btn';
+  copyBtn.textContent = '📋 ' + T('btn_copy');
+
+  btnRow.appendChild(saveBtn);
+  btnRow.appendChild(copyBtn);
+
+  copyBtn.addEventListener('click', function(e) {
+    e.stopPropagation();
+    var text = titleInput.value + (notesInput.value ? '\n' + notesInput.value : '');
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text)
+        .then(function() { showToast(T('toast_copied'), 'ok'); })
+        .catch(function() { showToast(T('toast_copy_failed'), 'err'); });
+    } else {
+      showToast(T('toast_copy_failed'), 'err');
+    }
+  });
+
+  saveBtn.addEventListener('click', function(e) {
+    e.stopPropagation();
+    saveBtn.disabled = true;
+    var newTitle = titleInput.value.trim();
+    var newNotes = notesInput.value.trim();
+    var newDate  = dateInput.value;
+    var newTime  = timeInput ? timeInput.value : null;
+    var calls = [];
+
+    if (isEvent) {
+      if (newTitle !== (t.title || '')) calls.push(gsCall('updateEventField', [t.taskId, 'title', newTitle]));
+      if (newNotes !== (t.notes || '')) calls.push(gsCall('updateEventField', [t.taskId, 'notes', newNotes]));
+      if (editColorVal !== (t.color || DEFAULT_EVENT_COLOR)) calls.push(gsCall('updateEventField', [t.taskId, 'color', editColorVal]));
+      if (newDate !== (t.due || '') || newTime !== (t.dueTime || '')) {
+        calls.push(gsCall('updateEventDateTime', [t.taskId, newDate || t.due, newTime || t.dueTime || '09:00']));
+      }
+    } else {
+      if (newTitle !== (t.title || '')) calls.push(gsCall('updateField', [t.listId, t.taskId, 'title', newTitle]));
+      if (newNotes !== (t.notes || '')) calls.push(gsCall('updateField', [t.listId, t.taskId, 'notes', newNotes]));
+      if (newDate !== (t.due || '')) calls.push(gsCall('updateField', [t.listId, t.taskId, 'due', newDate ? (newDate + 'T00:00:00.000Z') : null]));
+    }
+
+    if (!calls.length) { saveBtn.disabled = false; return; }
+
+    Promise.all(calls)
+      .then(function() {
+        showToast(T('toast_saved'), 'ok');
+        if (onSaved) onSaved();
+      })
+      .catch(function(e) {
+        saveBtn.disabled = false;
+        showToast(T('error_prefix') + e.message, 'err');
+      });
+  });
+
+  wrap.appendChild(titleInput);
+  wrap.appendChild(fieldsRow);
+  wrap.appendChild(notesInput);
+  wrap.appendChild(btnRow);
+  return wrap;
+}
+
+function renderTasksList(items) {
+  var listEl   = document.getElementById('tasks-list');
+  var emptyEl  = document.getElementById('tasks-empty');
+  var loadEl   = document.getElementById('tasks-loading');
+  loadEl.classList.add('hidden');
+  listEl.innerHTML = '';
+
+  if (!items.length) {
+    var searchInputEl = document.getElementById('search-input');
+    var hasQuery = searchInputEl && searchInputEl.value.trim().length > 0;
+    emptyEl.textContent = hasQuery ? T('tasks_empty_search') : T('tasks_empty');
+    emptyEl.classList.remove('hidden');
+    listEl.classList.add('hidden');
+    return;
+  }
+  emptyEl.classList.add('hidden');
+  listEl.classList.remove('hidden');
+
+  items.forEach(function(t) {
+    var isEvent = t.type === 'event';
+    var itemEl = document.createElement('div');
+    itemEl.className = 'task-item';
+
+    var row = document.createElement('div');
+    row.className = 'task-row' + (t.status === 'completed' ? ' done' : '');
+
+    var colorBar = document.createElement('div');
+    colorBar.className = 'task-color-bar';
+    if (isEvent) {
+      var barColor = (EVENT_COLORS.find(function(c) { return c.id === (t.color || DEFAULT_EVENT_COLOR); }) || {}).hex;
+      if (barColor) colorBar.style.background = barColor;
+    }
+
+    var chk = document.createElement('input');
+    chk.type = 'checkbox';
+    chk.checked = t.status === 'completed';
+    chk.addEventListener('click', function(e) { e.stopPropagation(); });
+    chk.addEventListener('change', function() {
+      var willBeDone = chk.checked;
+
+      if (!showAllMode) {
+        if (!willBeDone) return;
+        scheduleRowAction(itemEl, listEl, function() {
+          return isEvent
+            ? gsCall('toggleEventStatus', [t.taskId, true])
+            : gsCall('updateField', [t.listId, t.taskId, 'status', 'completed']);
+        });
+        return;
+      }
+
+      chk.disabled = true;
+      var call = isEvent
+        ? gsCall('toggleEventStatus', [t.taskId, willBeDone])
+        : gsCall('updateField', [t.listId, t.taskId, 'status', willBeDone ? 'completed' : 'needsAction']);
+      call
+        .then(function() {
+          t.status = willBeDone ? 'completed' : 'needsAction';
+          row.classList.toggle('done', willBeDone);
+          chk.disabled = false;
+        })
+        .catch(function(e) { chk.disabled = false; chk.checked = !willBeDone; showToast(T('error_prefix') + e.message, 'err'); });
+    });
+
+    var title = document.createElement('div');
+    title.className = 'task-col-notes';
+    title.textContent = t.title || '—';
+
+    var expandIcon = document.createElement('span');
+    expandIcon.className = 'task-expand-icon';
+    expandIcon.textContent = '⌄';
+
+    var details = buildTaskDetails(t, isEvent, function() { loadTasksView(); });
+
+    function toggleDetails() {
+      var willOpen = details.classList.contains('hidden');
+      details.classList.toggle('hidden');
+      expandIcon.textContent = willOpen ? '⌃' : '⌄';
+    }
+    title.addEventListener('click', toggleDetails);
+    expandIcon.addEventListener('click', toggleDetails);
+
+    var delBtn = document.createElement('button');
+    delBtn.type = 'button';
+    delBtn.className = 'task-del-btn';
+    delBtn.title = T('delete_title');
+    delBtn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg>';
+    if (isEvent) {
+      var delColor = (EVENT_COLORS.find(function(c) { return c.id === (t.color || DEFAULT_EVENT_COLOR); }) || {}).hex;
+      if (delColor) delBtn.style.color = delColor;
+    }
+    delBtn.addEventListener('click', function(e) {
+      e.stopPropagation();
+      scheduleRowAction(itemEl, listEl, function() {
+        return isEvent ? gsCall('deleteEvent', [t.taskId]) : gsCall('deleteTask', [t.listId, t.taskId]);
+      });
+    });
+
+    row.appendChild(colorBar);
+    row.appendChild(chk);
+    row.appendChild(title);
+    row.appendChild(expandIcon);
+    row.appendChild(delBtn);
+
+    itemEl.appendChild(row);
+    itemEl.appendChild(details);
+    listEl.appendChild(itemEl);
+  });
+}
+
+var lastLoadedItems = [];
+function filterItems(items) {
+  var input = document.getElementById('search-input');
+  var q = input ? input.value.trim().toLowerCase() : '';
+  if (!q) return items;
+  return items.filter(function(t) { return (t.title || '').toLowerCase().indexOf(q) > -1; });
+}
+
+// Ordem: eventos sempre antes das tarefas; dentro de cada grupo, da mais
+// nova para a mais antiga pela data de criação ("created", vindo do
+// servidor). O Google Tasks não guarda a data de criação de verdade — o
+// campo "created" das tarefas usa "updated" (última modificação) como
+// aproximação; itens sem "created" (dados antigos) caem no fim do grupo.
+function sortItems(items) {
+  return items.slice().sort(function(a, b) {
+    var isEventA = a.type === 'event' ? 0 : 1;
+    var isEventB = b.type === 'event' ? 0 : 1;
+    if (isEventA !== isEventB) return isEventA - isEventB;
+    var ca = a.created || '', cb = b.created || '';
+    if (ca !== cb) return ca > cb ? -1 : 1;
+    // Empate (ou ambos sem "created"): usa data/hora de vencimento como desempate.
+    var da = a.due || '9999-99-99', db = b.due || '9999-99-99';
+    if (da !== db) return da < db ? -1 : 1;
+    var ta = a.dueTime || '99:99', tb = b.dueTime || '99:99';
+    return ta < tb ? -1 : (ta > tb ? 1 : 0);
+  });
+}
+
+// Tarefas e eventos vêm de duas chamadas separadas (getTasks/getEvents); a
+// tela é atualizada assim que qualquer uma delas responde, sem esperar a
+// outra — não dá para ir "enchendo por página" como na versão PWA porque o
+// Apps Script de verdade não permite passar um callback de progresso pelo
+// google.script.run (só argumentos simples, sem funções).
+var loadTasksRequestId = 0;
+function loadTasksView() {
+  var loadEl  = document.getElementById('tasks-loading');
+  var emptyEl = document.getElementById('tasks-empty');
+  var listEl  = document.getElementById('tasks-list');
+  emptyEl.classList.add('hidden');
+  listEl.classList.add('hidden');
+  loadEl.textContent = T('tasks_loading');
+  loadEl.classList.remove('hidden');
+
+  var requestId = ++loadTasksRequestId;
+  var tasksResult = null;
+  var eventsResult = null;
+
+  function render() {
+    if (requestId !== loadTasksRequestId) return;
+    var merged = sortItems((tasksResult || []).concat(eventsResult || []));
+    var bothDone = tasksResult !== null && eventsResult !== null;
+    if (!bothDone && !merged.length) return;
+    lastLoadedItems = merged;
+    renderTasksList(filterItems(merged));
+  }
+
+  gsCallStream('getTasks', [showAllMode], function(partial) {
+    if (requestId !== loadTasksRequestId) return;
+    tasksResult = partial;
+    render();
+  })
+    .then(function(tasks) {
+      if (requestId !== loadTasksRequestId) return;
+      tasksResult = tasks || [];
+      render();
+    })
+    .catch(function(e) {
+      if (requestId === loadTasksRequestId) showToast(T('error_loading_prefix') + e.message, 'err');
+      tasksResult = tasksResult || [];
+      render();
+    });
+
+  gsCallStream('getEvents', [showAllMode], function(partial) {
+    if (requestId !== loadTasksRequestId) return;
+    eventsResult = partial;
+    render();
+  })
+    .then(function(events) {
+      if (requestId !== loadTasksRequestId) return;
+      eventsResult = events || [];
+      render();
+    })
+    .catch(function(e) {
+      if (requestId === loadTasksRequestId) showToast(T('error_loading_prefix') + e.message, 'err');
+      eventsResult = eventsResult || [];
+      render();
+    });
+}
+
+function updateColorBlock(block) {
+  var c = EVENT_COLORS.find(function(c) { return c.id === colorVal; }) || {};
+  block.style.background = c.hex || '#F4511E';
+  block.title = tf('color_tooltip_event', { name: colorName(colorVal) });
+}
+
+function resetForm() {
+  document.getElementById('qa-title').value = '';
+  document.getElementById('qa-date').value = todayISO;
+  document.getElementById('qa-notes').value = '';
+  document.getElementById('qa-title').focus();
+}
+
+var formWired = false;
+
+// Prepara os campos do formulário de adição rápida e a lista de pendências
+// — chamado depois do login com o Google (botão "Entrar") neste PWA.
+async function startApp() {
+  var today = new Date();
+  todayISO = today.getFullYear() + '-' + pad2(today.getMonth() + 1) + '-' + pad2(today.getDate());
+  todayBR  = pad2(today.getDate()) + '/' + pad2(today.getMonth() + 1) + '/' + String(today.getFullYear()).slice(-2);
+
+  var lists  = await gsCall('getTaskLists', []);
+  taskLists  = lists;
+  var events = await gsCall('getEvents', [false]);
+  todayEvents = events;
+
+  var typeToggle  = document.getElementById('qa-type-toggle');
+  var colorBlock  = document.getElementById('qa-color-block');
+  var dateInput   = document.getElementById('qa-date');
+  var notesInput  = document.getElementById('qa-notes');
+  var titleInput  = document.getElementById('qa-title');
+  var addBtn      = document.getElementById('qa-add-btn');
+
+  var mainListId = resolveMainListId();
+
+  currentType = '__task__';
+  updateTypeToggle();
+  updateColorBlock(colorBlock);
+  dateInput.value = todayISO;
+  notesInput.value = '';
+
+  if (!formWired) {
+    formWired = true;
+
+    typeToggle.addEventListener('click', function() {
+      currentType = currentType === '__task__' ? '__calendar__' : '__task__';
+      updateTypeToggle();
+    });
+
+    colorBlock.addEventListener('click', function(e) {
+      e.stopPropagation();
+      openColorPopover(colorBlock, colorVal, function(newColor) {
+        colorVal = newColor;
+        updateColorBlock(colorBlock);
+      });
+    });
+
+    document.getElementById('search-input').addEventListener('input', function() {
+      renderTasksList(filterItems(lastLoadedItems));
+    });
+
+    document.getElementById('quick-form').addEventListener('submit', function(e) {
+      e.preventDefault();
+      var title = titleInput.value.trim();
+      if (!title) return;
+      var listVal   = currentType;
+      var dateVal   = dateInput.value;
+      var notesRaw  = notesInput.value.trim();
+      var notesVal  = notesRaw ? (todayBR + ' - ' + notesRaw) : '';
+
+      titleInput.disabled = true;
+      addBtn.disabled = true;
+
+      if (listVal === '__calendar__') {
+        var evDateStr = dateVal || todayISO;
+        var slot = nextEventSlot(evDateStr);
+        var dp = evDateStr.split('-').map(Number);
+        var base = new Date(dp[0], dp[1] - 1, dp[2], slot.h, slot.mi);
+        gsCall('createEventQuick', [title, base.getFullYear(), base.getMonth() + 1, base.getDate(), base.getHours(), base.getMinutes(), notesVal, colorVal])
+          .then(function(created) {
+            todayEvents.unshift(created);
+            titleInput.disabled = false;
+            addBtn.disabled = false;
+            resetForm();
+            showToast(T('toast_event_created'), 'ok');
+            loadTasksView();
+          })
+          .catch(function(e) { titleInput.disabled = false; addBtn.disabled = false; showToast(T('error_prefix') + e.message, 'err'); });
+      } else {
+        var targetListId = mainListId || (taskLists.length ? taskLists[0].id : null);
+        if (!targetListId) {
+          titleInput.disabled = false;
+          addBtn.disabled = false;
+          showToast(T('toast_no_list_found'), 'err');
+          return;
+        }
+        gsCall('createTask', [targetListId, title, dateVal || null, notesVal || null])
+          .then(function() {
+            titleInput.disabled = false;
+            addBtn.disabled = false;
+            resetForm();
+            showToast(T('toast_task_created'), 'ok');
+            loadTasksView();
+          })
+          .catch(function(e) { titleInput.disabled = false; addBtn.disabled = false; showToast(T('error_prefix') + e.message, 'err'); });
+      }
+    });
+  }
+
+  document.getElementById('login-screen').classList.add('hidden');
+  document.getElementById('quick-form-wrap').classList.remove('hidden');
+  document.getElementById('tasks-view').classList.remove('hidden');
+  document.getElementById('fixed-bottom').classList.remove('hidden');
+  document.getElementById('peek-btn').classList.remove('hidden');
+  document.getElementById('data-menu-btn').classList.remove('hidden');
+  updatePeekButtonTitle();
+  loadTasksView();
+  titleInput.focus();
+}
+
+// ── LOGIN / LOGOUT ────────────────────────────────────────
+function showLoginError(msg) {
+  var el = document.getElementById('login-error');
+  el.textContent = msg;
+  el.classList.remove('hidden');
+}
+
+(function initAuth() {
+  var signinBtn = document.getElementById('signin-btn');
+
+  signinBtn.addEventListener('click', function() {
+    signinBtn.disabled = true;
+    document.getElementById('login-error').classList.add('hidden');
+    window.TaskEasierAuth.requestSignIn()
+      .then(function() { return startApp(); })
+      .then(function() { signinBtn.disabled = false; })
+      .catch(function(e) {
+        signinBtn.disabled = false;
+        showLoginError(T('error_prefix') + (e && e.message ? e.message : e));
+      });
+  });
+})();
+
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', function() { navigator.serviceWorker.register('sw.js').catch(function() {}); });
+}
+</script>
+</body>
+</html>
